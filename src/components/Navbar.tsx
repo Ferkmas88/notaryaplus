@@ -1,0 +1,137 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const links = [
+  { href: "/", label: "Inicio" },
+  { href: "/taxes", label: "Taxes" },
+  { href: "/notaria", label: "Notaría" },
+  { href: "/inmigracion", label: "Inmigración" },
+  { href: "/negocios", label: "Negocios" },
+  { href: "/traducciones", label: "Traducciones" },
+  { href: "/contacto", label: "Contacto" },
+];
+
+export default function Navbar() {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  return (
+    <>
+      {/* Contact bar */}
+      <div className="bg-navy-dark text-white text-xs py-2 px-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="tel:5026547076" className="flex items-center gap-1 hover:text-gold transition-colors">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+              </svg>
+              (502) 654-7076
+            </a>
+            <a href="tel:5026441312" className="flex items-center gap-1 hover:text-gold transition-colors">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+              </svg>
+              (502) 644-1312
+            </a>
+            <a href="mailto:notaryaplus3_1@yahoo.com" className="flex items-center gap-1 hover:text-gold transition-colors">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+              notaryaplus3_1@yahoo.com
+            </a>
+          </div>
+          <span className="hidden sm:block text-gold font-medium">
+            Lun–Vie: 10am–6pm &nbsp;|&nbsp; Sáb: 10am–5pm
+          </span>
+        </div>
+      </div>
+
+      {/* Main navbar */}
+      <nav className="bg-navy sticky top-0 z-50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-gold flex items-center justify-center bg-white">
+              <svg viewBox="0 0 40 40" className="w-7 h-7">
+                <circle cx="20" cy="20" r="18" fill="none" stroke="#C8A214" strokeWidth="2.5"/>
+                <path d="M10 20 L17 27 L30 13" stroke="#1B3356" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              </svg>
+            </div>
+            <div>
+              <div className="text-white font-bold text-sm leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                3-1 NOTARY A PLUS
+              </div>
+              <div className="text-gold text-xs leading-tight">Business & Tax Services</div>
+            </div>
+          </Link>
+
+          {/* Desktop links */}
+          <div className="hidden lg:flex items-center gap-1">
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === l.href
+                    ? "text-gold"
+                    : "text-gray-200 hover:text-white hover:bg-navy-light"
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
+            <Link
+              href="/citas"
+              className="ml-3 bg-gold text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-gold-light transition-colors shadow-md"
+            >
+              Agendar Cita
+            </Link>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setOpen(!open)}
+            className="lg:hidden text-white p-2"
+            aria-label="Menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {open ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile menu */}
+        {open && (
+          <div className="lg:hidden bg-navy-dark border-t border-navy-light px-4 pb-4">
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className={`block py-3 text-sm font-medium border-b border-navy-light ${
+                  pathname === l.href ? "text-gold" : "text-gray-200"
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
+            <Link
+              href="/citas"
+              onClick={() => setOpen(false)}
+              className="mt-4 block text-center bg-gold text-white font-semibold px-5 py-3 rounded-full text-sm"
+            >
+              Agendar Cita
+            </Link>
+          </div>
+        )}
+      </nav>
+    </>
+  );
+}
