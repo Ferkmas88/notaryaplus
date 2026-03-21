@@ -1,4 +1,23 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Preparación de Taxes Louisville KY | Individuales y Negocios",
+  description:
+    "Taxes individuales, de corporación, negocios, venta y locales. Taxes para camioneros: IRP, IFTA, KYU. Agente certificada IRS en Louisville, KY. Llama al 502-654-7076.",
+  keywords: [
+    "taxes louisville ky",
+    "preparacion de taxes louisville",
+    "tax preparation louisville",
+    "taxes individuales louisville",
+    "taxes negocios louisville",
+    "taxes camioneros louisville",
+    "IFTA KYU IRP louisville",
+    "agente IRS louisville",
+    "income tax louisville kentucky",
+  ],
+  alternates: { canonical: "/taxes" },
+};
 
 const taxServices = [
   {

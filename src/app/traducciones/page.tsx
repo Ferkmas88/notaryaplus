@@ -1,4 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Traducciones Certificadas Louisville KY | Español e Inglés",
+  description:
+    "Traducciones profesionales y certificadas en Louisville, KY. Títulos universitarios, certificados de nacimiento, documentos legales. Español-Inglés. Llama al 502-654-7076.",
+  keywords: [
+    "traducciones louisville ky",
+    "traducciones certificadas louisville",
+    "translation services louisville",
+    "traductor espanol ingles louisville",
+    "traduccion documentos legales louisville",
+    "traduccion titulo universitario louisville",
+    "certified translation louisville kentucky",
+  ],
+  alternates: { canonical: "/traducciones" },
+};
 
 const translationServices = [
   {

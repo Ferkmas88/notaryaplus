@@ -1,4 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Notario Público Louisville KY | Autenticación de Documentos",
+  description:
+    "Notario Público certificado en Louisville, KY. Autenticación de documentos, contratos, poderes notariales, interpretación y traducción oficial. Llama al 502-654-7076.",
+  keywords: [
+    "notario publico louisville ky",
+    "notary public louisville",
+    "autenticacion documentos louisville",
+    "poder notarial louisville",
+    "notarization louisville kentucky",
+    "notario hispano louisville",
+  ],
+  alternates: { canonical: "/notaria" },
+};
 
 const notaryServices = [
   {

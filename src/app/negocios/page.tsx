@@ -1,4 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Registro de Negocios Louisville KY | ITIN y Contabilidad",
+  description:
+    "Registro y estructuración de negocios, número ITIN, contabilidad, nóminas, licencias y permisos en Louisville, KY. Agente certificada IRS. Llama al 502-654-7076.",
+  keywords: [
+    "registro negocios louisville ky",
+    "ITIN louisville",
+    "abrir negocio louisville",
+    "LLC louisville kentucky",
+    "contabilidad pequenas empresas louisville",
+    "nominas louisville",
+    "licencias negocios louisville",
+    "EIN louisville",
+  ],
+  alternates: { canonical: "/negocios" },
+};
 
 const businessServices = [
   {

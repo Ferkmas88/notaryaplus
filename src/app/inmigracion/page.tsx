@@ -1,4 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Servicios de Inmigración Louisville KY | Formularios y Ciudadanía",
+  description:
+    "Llenado de formularios de inmigración, clases de ciudadanía, pasaporte cubano y americano, trámites consulares e interpretación en Louisville, KY. Llama al 502-654-7076.",
+  keywords: [
+    "inmigración louisville ky",
+    "formularios inmigración louisville",
+    "clases ciudadania louisville",
+    "pasaporte cubano louisville",
+    "tramites consulares louisville",
+    "immigration forms louisville kentucky",
+    "servicios inmigracion hispanos louisville",
+    "DACA louisville",
+  ],
+  alternates: { canonical: "/inmigracion" },
+};
 
 const immigrationServices = [
   {
