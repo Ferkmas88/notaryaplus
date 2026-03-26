@@ -12,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 @include __DIR__ . '/google-config.php';
 
 $DATA_FILE     = __DIR__ . '/appointments.json';
-$CONTACT_EMAIL = 'notaryaplus3_1@yahoo.com';
+$CONTACT_EMAIL  = 'notaryaplus3_1@yahoo.com';
+$CONTACT_EMAIL2 = 'notaryaplus26@gmail.com';
 
 $BUSINESS_HOURS = [
     1 => ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"],
@@ -153,7 +154,7 @@ function formatTime12h($time24) {
     return "$h12:$m $period";
 }
 
-function sendEmails($appt, $contactEmail, $serviceLabels, $dayNames) {
+function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames) {
     $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
     $dateObj  = strtotime($appt['date'] . ' 12:00:00');
     $dayName  = $dayNames[date('w', $dateObj)];
@@ -189,6 +190,7 @@ function sendEmails($appt, $contactEmail, $serviceLabels, $dayNames) {
     </div>";
 
     @mail($contactEmail, $subject, $body, $headers);
+    @mail($contactEmail2, $subject, $body, $headers);
 
     if (!empty($appt['email']) && strpos($appt['email'], '@') !== false) {
         $clientSubject = "Confirmación de Cita — {$dateStr} {$timeStr}";
@@ -327,7 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Crear evento en Google Calendar
     gcalCreateEvent($newAppt, $token, $SERVICE_LABELS);
 
-    sendEmails($newAppt, $CONTACT_EMAIL, $SERVICE_LABELS, $DAY_NAMES);
+    sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES);
 
     http_response_code(201);
     echo json_encode(['success' => true, 'id' => $id]);
