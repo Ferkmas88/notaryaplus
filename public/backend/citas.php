@@ -97,11 +97,13 @@ function gcalBusySlots($date, $token) {
     $busy = $data['calendars'][GOOGLE_CALENDAR_ID]['busy'] ?? [];
 
     $busySlots = [];
+    $localTz   = new DateTimeZone('America/Kentucky/Louisville');
     foreach ($busy as $period) {
-        $start = strtotime($period['start']);
-        $end   = strtotime($period['end']);
+        $start = strtotime($period['start']); // UTC timestamp
+        $end   = strtotime($period['end']);   // UTC timestamp
         for ($h = 10; $h <= 17; $h++) {
-            $slotStart = strtotime($date . sprintf(' %02d:00:00', $h));
+            $slotDt    = new DateTime($date . sprintf(' %02d:00:00', $h), $localTz);
+            $slotStart = $slotDt->getTimestamp(); // UTC timestamp
             $slotEnd   = $slotStart + 3600;
             if ($start < $slotEnd && $end > $slotStart) {
                 $busySlots[] = sprintf('%02d:00', $h);
