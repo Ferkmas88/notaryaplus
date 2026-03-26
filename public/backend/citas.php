@@ -9,7 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$DATA_FILE = __DIR__ . '/appointments.json';
+@include __DIR__ . '/google-config.php';
+
+$DATA_FILE     = __DIR__ . '/appointments.json';
 $CONTACT_EMAIL = 'notaryaplus3_1@yahoo.com';
 
 $BUSINESS_HOURS = [
@@ -39,10 +41,103 @@ $SERVICE_LABELS = [
 
 $DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
+// ─── Google Calendar helpers ──────────────────────────────────────────────────
+
+function gcalAccessToken() {
+    if (!defined('GOOGLE_REFRESH_TOKEN')) return null;
+    $ctx = stream_context_create(['http' => [
+        'method'  => 'POST',
+        'header'  => 'Content-Type: application/x-www-form-urlencoded',
+        'content' => http_build_query([
+            'client_id'     => GOOGLE_CLIENT_ID,
+            'client_secret' => GOOGLE_CLIENT_SECRET,
+            'refresh_token' => GOOGLE_REFRESH_TOKEN,
+            'grant_type'    => 'refresh_token',
+        ]),
+        'timeout' => 8,
+    ]]);
+    $res = @file_get_contents('https://oauth2.googleapis.com/token', false, $ctx);
+    if (!$res) return null;
+    $data = json_decode($res, true);
+    return $data['access_token'] ?? null;
+}
+
+function gcalBusySlots($date, $token) {
+    if (!$token) return [];
+    $tz      = 'America/Kentucky/Louisville';
+    $body    = json_encode([
+        'timeMin'  => $date . 'T00:00:00',
+        'timeMax'  => $date . 'T23:59:59',
+        'timeZone' => $tz,
+        'items'    => [['id' => GOOGLE_CALENDAR_ID]],
+    ]);
+    $ctx = stream_context_create(['http' => [
+        'method'  => 'POST',
+        'header'  => "Content-Type: application/json\r\nAuthorization: Bearer $token",
+        'content' => $body,
+        'timeout' => 8,
+    ]]);
+    $res = @file_get_contents('https://www.googleapis.com/calendar/v3/freeBusy', false, $ctx);
+    if (!$res) return [];
+    $data = json_decode($res, true);
+    $busy = $data['calendars'][GOOGLE_CALENDAR_ID]['busy'] ?? [];
+
+    $busySlots = [];
+    foreach ($busy as $period) {
+        $start = strtotime($period['start']);
+        $end   = strtotime($period['end']);
+        for ($h = 10; $h <= 17; $h++) {
+            $slotStart = strtotime($date . sprintf(' %02d:00:00', $h));
+            $slotEnd   = $slotStart + 3600;
+            if ($start < $slotEnd && $end > $slotStart) {
+                $busySlots[] = sprintf('%02d:00', $h);
+            }
+        }
+    }
+    return $busySlots;
+}
+
+function gcalCreateEvent($appt, $token, $serviceLabels) {
+    if (!$token) return;
+    $label   = $serviceLabels[$appt['service']] ?? $appt['service'];
+    $endHour = sprintf('%02d', (int)substr($appt['time'], 0, 2) + 1);
+    $endMin  = substr($appt['time'], 3, 2);
+    $tz      = 'America/Kentucky/Louisville';
+    $event   = [
+        'summary'     => "Cita: {$label} — {$appt['name']}",
+        'description' => implode("\n", [
+            "Cliente: {$appt['name']}",
+            "Teléfono: {$appt['phone']}",
+            "Email: {$appt['email']}",
+            "Servicio: {$label}",
+            "Notas: {$appt['notes']}",
+            "ID: {$appt['id']}",
+        ]),
+        'start' => ['dateTime' => $appt['date'] . 'T' . $appt['time'] . ':00', 'timeZone' => $tz],
+        'end'   => ['dateTime' => $appt['date'] . 'T' . $endHour . ':' . $endMin . ':00', 'timeZone' => $tz],
+        'reminders' => [
+            'useDefault' => false,
+            'overrides'  => [
+                ['method' => 'email', 'minutes' => 1440],
+                ['method' => 'popup', 'minutes' => 60],
+            ],
+        ],
+    ];
+    $url = 'https://www.googleapis.com/calendar/v3/calendars/' . urlencode(GOOGLE_CALENDAR_ID) . '/events';
+    $ctx = stream_context_create(['http' => [
+        'method'  => 'POST',
+        'header'  => "Content-Type: application/json\r\nAuthorization: Bearer $token",
+        'content' => json_encode($event),
+        'timeout' => 8,
+    ]]);
+    @file_get_contents($url, false, $ctx);
+}
+
+// ─── File helpers ─────────────────────────────────────────────────────────────
+
 function readAppointments($file) {
     if (!file_exists($file)) return [];
-    $raw = file_get_contents($file);
-    $data = json_decode($raw, true);
+    $data = json_decode(file_get_contents($file), true);
     return is_array($data) ? $data : [];
 }
 
@@ -52,24 +147,20 @@ function writeAppointments($file, $data) {
 
 function formatTime12h($time24) {
     list($h, $m) = explode(':', $time24);
-    $h = (int)$h;
+    $h      = (int)$h;
     $period = $h >= 12 ? 'PM' : 'AM';
-    $h12 = $h % 12 === 0 ? 12 : $h % 12;
+    $h12    = $h % 12 === 0 ? 12 : $h % 12;
     return "$h12:$m $period";
 }
 
 function sendEmails($appt, $contactEmail, $serviceLabels, $dayNames) {
-    $serviceLabel = isset($serviceLabels[$appt['service']]) ? $serviceLabels[$appt['service']] : $appt['service'];
-    $dateObj = strtotime($appt['date'] . ' 12:00:00');
-    $dayName = $dayNames[date('w', $dateObj)];
-    $dateStr = $dayName . ', ' . date('F j, Y', $dateObj);
-    $timeStr = formatTime12h($appt['time']);
+    $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
+    $dateObj  = strtotime($appt['date'] . ' 12:00:00');
+    $dayName  = $dayNames[date('w', $dateObj)];
+    $dateStr  = $dayName . ', ' . date('F j, Y', $dateObj);
+    $timeStr  = formatTime12h($appt['time']);
+    $headers  = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: 3-1 Notary A Plus <noreply@notaryaplus.com>\r\n";
 
-    $headers  = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: 3-1 Notary A Plus <noreply@notaryaplus.com>\r\n";
-
-    // Email a Myrna
     $subject = "Nueva Cita: {$serviceLabel} — {$dateStr} {$timeStr}";
     $body = "
     <div style='font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#1a1a2e;'>
@@ -99,7 +190,6 @@ function sendEmails($appt, $contactEmail, $serviceLabels, $dayNames) {
 
     @mail($contactEmail, $subject, $body, $headers);
 
-    // Confirmación al cliente
     if (!empty($appt['email']) && strpos($appt['email'], '@') !== false) {
         $clientSubject = "Confirmación de Cita — {$dateStr} {$timeStr}";
         $clientBody = "
@@ -127,7 +217,6 @@ function sendEmails($appt, $contactEmail, $serviceLabels, $dayNames) {
             <p style='color:#C5E8D5;margin:0;font-size:12px;'>&copy; " . date('Y') . " 3-1 Notary A Plus — Myrna Rodríguez</p>
           </div>
         </div>";
-
         @mail($appt['email'], $clientSubject, $clientBody, $headers);
     }
 }
@@ -142,18 +231,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit();
     }
 
-    $dayOfWeek = (int)date('w', strtotime($date . ' 12:00:00'));
-    $availableSlots = isset($BUSINESS_HOURS[$dayOfWeek]) ? $BUSINESS_HOURS[$dayOfWeek] : [];
+    $dayOfWeek      = (int)date('w', strtotime($date . ' 12:00:00'));
+    $availableSlots = $BUSINESS_HOURS[$dayOfWeek] ?? [];
 
+    // Citas guardadas localmente
     $appointments = readAppointments($DATA_FILE);
-    $bookedTimes = [];
+    $bookedTimes  = [];
     foreach ($appointments as $a) {
-        if ($a['date'] === $date) {
-            $bookedTimes[] = $a['time'];
-        }
+        if ($a['date'] === $date) $bookedTimes[] = $a['time'];
     }
 
-    echo json_encode(['availableSlots' => $availableSlots, 'bookedTimes' => $bookedTimes]);
+    // Citas de Google Calendar
+    $token      = gcalAccessToken();
+    $gcalBusy   = gcalBusySlots($date, $token);
+    $bookedTimes = array_unique(array_merge($bookedTimes, $gcalBusy));
+
+    echo json_encode(['availableSlots' => $availableSlots, 'bookedTimes' => array_values($bookedTimes)]);
     exit();
 }
 
@@ -181,8 +274,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    $dayOfWeek = (int)date('w', strtotime($date . ' 12:00:00'));
-    $allowedSlots = isset($BUSINESS_HOURS[$dayOfWeek]) ? $BUSINESS_HOURS[$dayOfWeek] : [];
+    $dayOfWeek    = (int)date('w', strtotime($date . ' 12:00:00'));
+    $allowedSlots = $BUSINESS_HOURS[$dayOfWeek] ?? [];
 
     if (empty($allowedSlots)) {
         http_response_code(400);
@@ -198,7 +291,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $appointments = readAppointments($DATA_FILE);
 
-    // Verificar conflicto
     foreach ($appointments as $a) {
         if ($a['date'] === $date && $a['time'] === $time) {
             http_response_code(409);
@@ -207,7 +299,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Nueva cita
+    // Verificar también en Google Calendar
+    $token = gcalAccessToken();
+    $gcalBusy = gcalBusySlots($date, $token);
+    if (in_array($time, $gcalBusy)) {
+        http_response_code(409);
+        echo json_encode(['error' => 'Ese horario ya está ocupado en el calendario. Por favor selecciona otra hora.']);
+        exit();
+    }
+
     $id = 'CIT-' . time() . rand(100, 999);
     $newAppt = [
         'id'        => $id,
@@ -223,6 +323,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $appointments[] = $newAppt;
     writeAppointments($DATA_FILE, $appointments);
+
+    // Crear evento en Google Calendar
+    gcalCreateEvent($newAppt, $token, $SERVICE_LABELS);
 
     sendEmails($newAppt, $CONTACT_EMAIL, $SERVICE_LABELS, $DAY_NAMES);
 

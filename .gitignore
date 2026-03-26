@@ -32,3 +32,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Google Calendar credentials (upload manually to Hostinger)
+public/backend/google-config.php
+public/backend/auth.php
