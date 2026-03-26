@@ -78,11 +78,13 @@ function gcalAccessToken() {
 
 function gcalBusySlots($date, $token) {
     if (!$token) return [];
-    $tz   = 'America/Kentucky/Louisville';
+    $tz     = new DateTimeZone('America/Kentucky/Louisville');
+    $dtMin  = new DateTime($date . ' 00:00:00', $tz);
+    $dtMax  = new DateTime($date . ' 23:59:59', $tz);
     $body = json_encode([
-        'timeMin'  => $date . 'T00:00:00',
-        'timeMax'  => $date . 'T23:59:59',
-        'timeZone' => $tz,
+        'timeMin'  => $dtMin->format(DateTime::RFC3339),
+        'timeMax'  => $dtMax->format(DateTime::RFC3339),
+        'timeZone' => 'America/Kentucky/Louisville',
         'items'    => [['id' => GOOGLE_CALENDAR_ID]],
     ]);
     $res = curlPost(
@@ -125,8 +127,8 @@ function gcalCreateEvent($appt, $token, $serviceLabels) {
             "Notas: {$appt['notes']}",
             "ID: {$appt['id']}",
         ]),
-        'start' => ['dateTime' => $appt['date'] . 'T' . $appt['time'] . ':00', 'timeZone' => $tz],
-        'end'   => ['dateTime' => $appt['date'] . 'T' . $endHour . ':' . $endMin . ':00', 'timeZone' => $tz],
+        'start' => ['dateTime' => $appt['date'] . 'T' . $appt['time'] . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
+        'end'   => ['dateTime' => $appt['date'] . 'T' . $endHour . ':' . $endMin . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
         'reminders' => [
             'useDefault' => false,
             'overrides'  => [
