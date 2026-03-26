@@ -44,20 +44,33 @@ $DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábad
 
 // ─── Google Calendar helpers ──────────────────────────────────────────────────
 
+function curlPost($url, $headers, $body) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $body,
+        CURLOPT_HTTPHEADER     => $headers,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_SSL_VERIFYPEER => true,
+    ]);
+    $res = curl_exec($ch);
+    curl_close($ch);
+    return $res ?: null;
+}
+
 function gcalAccessToken() {
     if (!defined('GOOGLE_REFRESH_TOKEN')) return null;
-    $ctx = stream_context_create(['http' => [
-        'method'  => 'POST',
-        'header'  => 'Content-Type: application/x-www-form-urlencoded',
-        'content' => http_build_query([
+    $res = curlPost(
+        'https://oauth2.googleapis.com/token',
+        ['Content-Type: application/x-www-form-urlencoded'],
+        http_build_query([
             'client_id'     => GOOGLE_CLIENT_ID,
             'client_secret' => GOOGLE_CLIENT_SECRET,
             'refresh_token' => GOOGLE_REFRESH_TOKEN,
             'grant_type'    => 'refresh_token',
-        ]),
-        'timeout' => 8,
-    ]]);
-    $res = @file_get_contents('https://oauth2.googleapis.com/token', false, $ctx);
+        ])
+    );
     if (!$res) return null;
     $data = json_decode($res, true);
     return $data['access_token'] ?? null;
@@ -65,20 +78,18 @@ function gcalAccessToken() {
 
 function gcalBusySlots($date, $token) {
     if (!$token) return [];
-    $tz      = 'America/Kentucky/Louisville';
-    $body    = json_encode([
+    $tz   = 'America/Kentucky/Louisville';
+    $body = json_encode([
         'timeMin'  => $date . 'T00:00:00',
         'timeMax'  => $date . 'T23:59:59',
         'timeZone' => $tz,
         'items'    => [['id' => GOOGLE_CALENDAR_ID]],
     ]);
-    $ctx = stream_context_create(['http' => [
-        'method'  => 'POST',
-        'header'  => "Content-Type: application/json\r\nAuthorization: Bearer $token",
-        'content' => $body,
-        'timeout' => 8,
-    ]]);
-    $res = @file_get_contents('https://www.googleapis.com/calendar/v3/freeBusy', false, $ctx);
+    $res = curlPost(
+        'https://www.googleapis.com/calendar/v3/freeBusy',
+        ['Content-Type: application/json', "Authorization: Bearer $token"],
+        $body
+    );
     if (!$res) return [];
     $data = json_decode($res, true);
     $busy = $data['calendars'][GOOGLE_CALENDAR_ID]['busy'] ?? [];
@@ -125,13 +136,7 @@ function gcalCreateEvent($appt, $token, $serviceLabels) {
         ],
     ];
     $url = 'https://www.googleapis.com/calendar/v3/calendars/' . urlencode(GOOGLE_CALENDAR_ID) . '/events';
-    $ctx = stream_context_create(['http' => [
-        'method'  => 'POST',
-        'header'  => "Content-Type: application/json\r\nAuthorization: Bearer $token",
-        'content' => json_encode($event),
-        'timeout' => 8,
-    ]]);
-    @file_get_contents($url, false, $ctx);
+    curlPost($url, ['Content-Type: application/json', "Authorization: Bearer $token"], json_encode($event));
 }
 
 // ─── File helpers ─────────────────────────────────────────────────────────────
