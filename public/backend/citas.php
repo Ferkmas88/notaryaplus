@@ -147,12 +147,19 @@ function gcalCreateEvent($appt, $token, $serviceLabels) {
 
 function readAppointments($file) {
     if (!file_exists($file)) return [];
-    $data = json_decode(file_get_contents($file), true);
+    $raw = file_get_contents($file);
+    if ($raw === false || trim($raw) === '') return [];
+    $data = json_decode($raw, true);
     return is_array($data) ? $data : [];
 }
 
 function writeAppointments($file, $data) {
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if ($json === false) return false;
+    // Escribir a archivo temporal primero para evitar corrupción
+    $tmp = $file . '.tmp';
+    if (file_put_contents($tmp, $json, LOCK_EX) === false) return false;
+    return rename($tmp, $file);
 }
 
 function formatTime12h($time24) {
@@ -334,15 +341,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     $appointments[] = $newAppt;
-    writeAppointments($DATA_FILE, $appointments);
+    if (!writeAppointments($DATA_FILE, $appointments)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Error guardando la cita. Inténtalo de nuevo.']);
+        exit();
+    }
 
-    // Crear evento en Google Calendar
-    gcalCreateEvent($newAppt, $token, $SERVICE_LABELS);
-
-    sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES);
-
+    // Responder al cliente PRIMERO (rápido)
     http_response_code(201);
     echo json_encode(['success' => true, 'id' => $id]);
+
+    // Cerrar la conexión para que el navegador no espere
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        ob_end_flush();
+        flush();
+    }
+
+    // Ahora enviar emails y crear evento en Google Calendar (sin bloquear)
+    try { gcalCreateEvent($newAppt, $token, $SERVICE_LABELS); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
+    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
+
     exit();
 }
 
