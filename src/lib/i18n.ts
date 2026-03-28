@@ -178,6 +178,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "notaria.s1.i4": "Poderes notariales (Power of Attorney)",
     "notaria.s1.i5": "Contratos y acuerdos",
     "notaria.s1.i6": "Documentos para trámites gubernamentales",
+    "notaria.s1.i7": "Apostillas y legalizaciones",
 
     "notaria.s2.title": "Intérprete Certificada",
     "notaria.s2.desc": "Servicios de interpretación profesional para trámites legales, médicos, laborales y personales. Interpretación en inglés y español.",
@@ -655,6 +656,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "notaria.s1.i4": "Powers of Attorney",
     "notaria.s1.i5": "Contracts and agreements",
     "notaria.s1.i6": "Documents for government procedures",
+    "notaria.s1.i7": "Apostilles and legalizations",
 
     "notaria.s2.title": "Certified Interpreter",
     "notaria.s2.desc": "Professional interpretation services for legal, medical, labor and personal matters. Interpretation in English and Spanish.",

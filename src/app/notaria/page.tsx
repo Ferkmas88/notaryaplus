@@ -12,8 +12,9 @@ export default function NotariaPage() {
       titleKey: "notaria.s1.title",
       descKey: "notaria.s1.desc",
       items: [
-        t("notaria.s1.i1", lang), t("notaria.s1.i2", lang), t("notaria.s1.i3", lang),
-        t("notaria.s1.i4", lang), t("notaria.s1.i5", lang), t("notaria.s1.i6", lang),
+        t("notaria.s1.i1", lang), t("notaria.s1.i2", lang), t("notaria.s1.i7", lang),
+        t("notaria.s1.i3", lang), t("notaria.s1.i4", lang), t("notaria.s1.i5", lang),
+        t("notaria.s1.i6", lang),
       ],
     },
     {

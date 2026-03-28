@@ -10,17 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 @include __DIR__ . '/google-config.php';
-require_once __DIR__ . '/smtp-config.php';
-require_once __DIR__ . '/phpmailer/PHPMailer.php';
-require_once __DIR__ . '/phpmailer/SMTP.php';
-require_once __DIR__ . '/phpmailer/Exception.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception as PHPMailerException;
-
-$DATA_FILE     = __DIR__ . '/appointments.json';
-$CONTACT_EMAIL  = defined('CONTACT_EMAIL')  ? CONTACT_EMAIL  : 'notaryaplus26@gmail.com';
-$CONTACT_EMAIL2 = defined('CONTACT_EMAIL2') ? CONTACT_EMAIL2 : 'notaryaplus3_1@yahoo.com';
+$DATA_FILE      = __DIR__ . '/appointments.json';
+$CONTACT_EMAIL  = 'notaryaplus26@gmail.com';
+$CONTACT_EMAIL2 = 'notaryaplus3_1@yahoo.com';
 
 $BUSINESS_HOURS = [
     1 => ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"],
@@ -170,27 +163,13 @@ function formatTime12h($time24) {
     return "$h12:$m $period";
 }
 
-function createMailer() {
-    $mail = new PHPMailer(true);
-    $mail->isSMTP();
-    $mail->Host       = SMTP_HOST;
-    $mail->SMTPAuth   = true;
-    $mail->Username   = SMTP_USER;
-    $mail->Password   = SMTP_PASS;
-    $mail->SMTPSecure = SMTP_SECURE;
-    $mail->Port       = SMTP_PORT;
-    $mail->CharSet    = 'UTF-8';
-    $mail->isHTML(true);
-    $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
-    return $mail;
-}
-
 function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames) {
     $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
     $dateObj  = strtotime($appt['date'] . ' 12:00:00');
     $dayName  = $dayNames[date('w', $dateObj)];
     $dateStr  = $dayName . ', ' . date('F j, Y', $dateObj);
     $timeStr  = formatTime12h($appt['time']);
+    $headers  = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: 3-1 Notary A Plus <noreply@notaryaplus.com>\r\n";
 
     $subject = "Nueva Cita: {$serviceLabel} — {$dateStr} {$timeStr}";
     $body = "
@@ -219,19 +198,9 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
       </div>
     </div>";
 
-    // Enviar a los emails del negocio via SMTP
-    try {
-        $mail = createMailer();
-        $mail->addAddress($contactEmail);
-        $mail->addAddress($contactEmail2);
-        $mail->Subject = $subject;
-        $mail->Body    = $body;
-        $mail->send();
-    } catch (PHPMailerException $e) {
-        error_log("Error enviando email al negocio: " . $e->getMessage());
-    }
+    mail($contactEmail, $subject, $body, $headers);
+    mail($contactEmail2, $subject, $body, $headers);
 
-    // Confirmación al cliente
     if (!empty($appt['email']) && strpos($appt['email'], '@') !== false) {
         $clientSubject = "Confirmación de Cita — {$dateStr} {$timeStr}";
         $clientBody = "
@@ -260,15 +229,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
           </div>
         </div>";
 
-        try {
-            $mail2 = createMailer();
-            $mail2->addAddress($appt['email']);
-            $mail2->Subject = $clientSubject;
-            $mail2->Body    = $clientBody;
-            $mail2->send();
-        } catch (PHPMailerException $e) {
-            error_log("Error enviando confirmación al cliente: " . $e->getMessage());
-        }
+        mail($appt['email'], $clientSubject, $clientBody, $headers);
     }
 }
 
