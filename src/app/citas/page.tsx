@@ -1,32 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-const SERVICES = [
-  { value: "taxes_individual", label: "Taxes Individuales" },
-  { value: "taxes_negocio", label: "Taxes de Negocio / Corporación" },
-  { value: "taxes_camionero", label: "Trámites para Camioneros (IRP/IFTA/KYU)" },
-  { value: "notaria", label: "Notaría Pública" },
-  { value: "inmigracion", label: "Inmigración / Formularios" },
-  { value: "ciudadania", label: "Clases de Ciudadanía" },
-  { value: "pasaporte", label: "Pasaporte Cubano/Americano" },
-  { value: "negocios", label: "Registro / Estructuración de Negocios" },
-  { value: "itin", label: "Número de ITIN" },
-  { value: "contabilidad", label: "Contabilidad y Nóminas" },
-  { value: "traducciones", label: "Traducciones Profesionales" },
-  { value: "otro", label: "Otro / Consulta General" },
-];
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 function formatTime12h(time24: string): string {
   const [h, m] = time24.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
   const h12 = h % 12 === 0 ? 12 : h % 12;
   return `${h12}:${m.toString().padStart(2, "0")} ${period}`;
-}
-
-function getTodayStr(): string {
-  const today = new Date();
-  return today.toISOString().split("T")[0];
 }
 
 function getMinDate(): string {
@@ -38,6 +20,7 @@ function getMinDate(): string {
 type Step = "service" | "datetime" | "info" | "success";
 
 export default function CitasPage() {
+  const { lang } = useLang();
   const [step, setStep] = useState<Step>("service");
   const [service, setService] = useState("");
   const [date, setDate] = useState("");
@@ -52,6 +35,21 @@ export default function CitasPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successId, setSuccessId] = useState("");
+
+  const SERVICES = [
+    { value: "taxes_individual", label: t("citas.svc.taxes_individual", lang) },
+    { value: "taxes_negocio", label: t("citas.svc.taxes_negocio", lang) },
+    { value: "taxes_camionero", label: t("citas.svc.taxes_camionero", lang) },
+    { value: "notaria", label: t("citas.svc.notaria", lang) },
+    { value: "inmigracion", label: t("citas.svc.inmigracion", lang) },
+    { value: "ciudadania", label: t("citas.svc.ciudadania", lang) },
+    { value: "pasaporte", label: t("citas.svc.pasaporte", lang) },
+    { value: "negocios", label: t("citas.svc.negocios", lang) },
+    { value: "itin", label: t("citas.svc.itin", lang) },
+    { value: "contabilidad", label: t("citas.svc.contabilidad", lang) },
+    { value: "traducciones", label: t("citas.svc.traducciones", lang) },
+    { value: "otro", label: t("citas.svc.otro", lang) },
+  ];
 
   useEffect(() => {
     if (!date) return;
@@ -93,9 +91,8 @@ export default function CitasPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Error al agendar la cita. Intenta nuevamente.");
+        setError(data.error || t("citas.error.generic", lang));
         if (res.status === 409) {
-          // Slot taken — refresh slots
           const refreshRes = await fetch(`/backend/citas.php?date=${date}`);
           const refreshData = await refreshRes.json();
           setBookedSlots(refreshData.bookedTimes || []);
@@ -106,7 +103,7 @@ export default function CitasPage() {
         setStep("success");
       }
     } catch {
-      setError("Error de conexión. Verifica tu internet e intenta nuevamente.");
+      setError(t("citas.error.connection", lang));
     } finally {
       setSubmitting(false);
     }
@@ -125,38 +122,38 @@ export default function CitasPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-            ¡Cita Agendada!
+            {t("citas.success.title", lang)}
           </h1>
           <p className="text-gray-700 mb-2">
-            Tu cita fue registrada exitosamente. Recibirás una confirmación por email.
+            {t("citas.success.desc", lang)}
           </p>
           <p className="text-sm text-gray-500 mb-6">
-            ID de cita: <strong className="text-navy">{successId}</strong>
+            {t("citas.success.id", lang)} <strong className="text-navy">{successId}</strong>
           </p>
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-mint text-left mb-6">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Servicio:</span>
+                <span className="text-gray-500">{t("citas.summary.service", lang)}:</span>
                 <span className="font-medium text-navy">{selectedService?.label}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Fecha:</span>
+                <span className="text-gray-500">{t("citas.summary.date", lang)}:</span>
                 <span className="font-medium">{new Date(date + "T12:00:00").toLocaleDateString("es-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Hora:</span>
+                <span className="text-gray-500">{t("citas.summary.time", lang)}:</span>
                 <span className="font-medium">{formatTime12h(time)}</span>
               </div>
             </div>
           </div>
           <div className="bg-navy/5 rounded-xl p-4 text-sm text-gray-700 text-left mb-6">
-            <p className="font-semibold text-navy mb-1">Recordatorio:</p>
+            <p className="font-semibold text-navy mb-1">{t("citas.success.reminder.title", lang)}</p>
             <p>8514 Preston Hwy, Louisville, KY 40219</p>
             <p>(502) 654-7076 | (502) 644-1312</p>
-            <p className="text-xs text-gray-500 mt-2">Si necesitas cancelar o cambiar tu cita, llámanos con al menos 24 horas de anticipación.</p>
+            <p className="text-xs text-gray-500 mt-2">{t("citas.success.cancel", lang)}</p>
           </div>
           <a href="/" className="btn-gold inline-block">
-            Volver al Inicio
+            {t("citas.success.back", lang)}
           </a>
         </div>
       </div>
@@ -169,15 +166,15 @@ export default function CitasPage() {
       <section className="bg-navy py-14">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Agenda tu Cita
+            {t("citas.hero.title", lang)}
           </h1>
           <p className="text-gray-300 max-w-xl mx-auto">
-            Selecciona el servicio, la fecha y la hora disponible. Sin costo de consulta.
+            {t("citas.hero.desc", lang)}
           </p>
           {/* Steps indicator */}
           <div className="flex items-center justify-center gap-2 mt-8">
             {(["service", "datetime", "info"] as Step[]).map((s, i) => {
-              const labels = ["Servicio", "Fecha y Hora", "Tus Datos"];
+              const labels = [t("citas.step1.label", lang), t("citas.step2.label", lang), t("citas.step3.label", lang)];
               const stepIndex = ["service", "datetime", "info"].indexOf(step);
               const isCompleted = i < stepIndex;
               const isActive = step === s;
@@ -207,7 +204,7 @@ export default function CitasPage() {
           {step === "service" && (
             <div className="card">
               <h2 className="text-2xl font-bold text-navy mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-                ¿Qué servicio necesitas?
+                {t("citas.step1.title", lang)}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {SERVICES.map((s) => (
@@ -237,7 +234,7 @@ export default function CitasPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                Cambiar servicio
+                {t("citas.step2.back", lang)}
               </button>
 
               <div className="bg-mint/50 rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
@@ -248,11 +245,11 @@ export default function CitasPage() {
               </div>
 
               <h2 className="text-2xl font-bold text-navy mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Selecciona Fecha y Hora
+                {t("citas.step2.title", lang)}
               </h2>
 
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Fecha</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">{t("citas.date.label", lang)}</label>
                 <input
                   type="date"
                   min={getMinDate()}
@@ -262,26 +259,26 @@ export default function CitasPage() {
                 />
                 {isDayOff && (
                   <p className="text-red-600 text-sm mt-2">
-                    No atendemos los domingos. Por favor selecciona otro día.
+                    {t("citas.sunday.msg", lang)}
                   </p>
                 )}
                 {date && !isDayOff && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Horario: {new Date(date + "T12:00:00").getDay() === 6 ? "10:00 AM – 5:00 PM" : "10:00 AM – 6:00 PM"}
+                    Horario: {new Date(date + "T12:00:00").getDay() === 6 ? t("citas.schedule.sat", lang) : t("citas.schedule.weekday", lang)}
                   </p>
                 )}
               </div>
 
               {date && !isDayOff && (
                 <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Hora disponible</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">{t("citas.time.label", lang)}</label>
                   {loadingSlots ? (
                     <div className="flex items-center gap-2 text-gray-500 text-sm">
                       <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
-                      Cargando horarios...
+                      {t("citas.loading", lang)}
                     </div>
                   ) : availableSlots.length === 0 ? (
-                    <p className="text-sm text-gray-500">No hay horarios disponibles para este día.</p>
+                    <p className="text-sm text-gray-500">{t("citas.no.slots", lang)}</p>
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {availableSlots.map((slot) => {
@@ -314,7 +311,7 @@ export default function CitasPage() {
                 disabled={!date || !time || isDayOff}
                 className="w-full btn-gold disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Continuar →
+                {t("citas.continue", lang)}
               </button>
             </div>
           )}
@@ -329,83 +326,83 @@ export default function CitasPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                Cambiar horario
+                {t("citas.step3.back", lang)}
               </button>
 
               {/* Summary */}
               <div className="bg-navy rounded-xl p-4 mb-6">
                 <div className="grid grid-cols-3 gap-3 text-center text-sm">
                   <div>
-                    <p className="text-gray-400 text-xs mb-1">Servicio</p>
+                    <p className="text-gray-400 text-xs mb-1">{t("citas.summary.service", lang)}</p>
                     <p className="text-white font-medium text-xs leading-tight">{selectedService?.label}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-xs mb-1">Fecha</p>
+                    <p className="text-gray-400 text-xs mb-1">{t("citas.summary.date", lang)}</p>
                     <p className="text-white font-medium text-xs">
                       {new Date(date + "T12:00:00").toLocaleDateString("es-US", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-xs mb-1">Hora</p>
+                    <p className="text-gray-400 text-xs mb-1">{t("citas.summary.time", lang)}</p>
                     <p className="text-gold font-bold text-sm">{formatTime12h(time)}</p>
                   </div>
                 </div>
               </div>
 
               <h2 className="text-2xl font-bold text-navy mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Tus Datos
+                {t("citas.step3.title", lang)}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Nombre completo <span className="text-red-500">*</span>
+                    {t("citas.name.label", lang)} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Tu nombre completo"
+                    placeholder={t("citas.name.placeholder", lang)}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-gold text-gray-700"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Teléfono <span className="text-red-500">*</span>
+                    {t("citas.phone.label", lang)} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="(502) 000-0000"
+                    placeholder={t("citas.phone.placeholder", lang)}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-gold text-gray-700"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Correo electrónico <span className="text-gray-400 font-normal">(opcional, para confirmación)</span>
+                    {t("citas.email.label", lang)} <span className="text-gray-400 font-normal">{t("citas.email.optional", lang)}</span>
                   </label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tucorreo@email.com"
+                    placeholder={t("citas.email.placeholder", lang)}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-gold text-gray-700"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Notas adicionales <span className="text-gray-400 font-normal">(opcional)</span>
+                    {t("citas.notes.label", lang)} <span className="text-gray-400 font-normal">{t("citas.notes.optional", lang)}</span>
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="¿Hay algo importante que debamos saber antes de tu cita?"
+                    placeholder={t("citas.notes.placeholder", lang)}
                     rows={3}
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-gold text-gray-700 resize-none"
                   />
@@ -425,15 +422,15 @@ export default function CitasPage() {
                   {submitting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Agendando...
+                      {t("citas.submitting", lang)}
                     </>
                   ) : (
-                    "Confirmar Cita"
+                    t("citas.submit", lang)
                   )}
                 </button>
 
                 <p className="text-xs text-center text-gray-500">
-                  Al agendar tu cita aceptas ser contactado por 3-1 Notary A Plus para confirmar o reprogramar si es necesario.
+                  {t("citas.legal", lang)}
                 </p>
               </form>
             </div>
@@ -447,18 +444,18 @@ export default function CitasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             <div>
               <div className="text-2xl mb-2">📅</div>
-              <h3 className="font-semibold text-navy mb-1">Sin Costos Ocultos</h3>
-              <p className="text-sm text-gray-600">La consulta inicial no tiene costo. Solo pagas por el servicio.</p>
+              <h3 className="font-semibold text-navy mb-1">{t("citas.strip.nocost.title", lang)}</h3>
+              <p className="text-sm text-gray-600">{t("citas.strip.nocost.desc", lang)}</p>
             </div>
             <div>
               <div className="text-2xl mb-2">🌎</div>
-              <h3 className="font-semibold text-navy mb-1">Atención en Español</h3>
-              <p className="text-sm text-gray-600">Todo el proceso de principio a fin en tu idioma.</p>
+              <h3 className="font-semibold text-navy mb-1">{t("citas.strip.spanish.title", lang)}</h3>
+              <p className="text-sm text-gray-600">{t("citas.strip.spanish.desc", lang)}</p>
             </div>
             <div>
               <div className="text-2xl mb-2">📍</div>
-              <h3 className="font-semibold text-navy mb-1">Fácil de Llegar</h3>
-              <p className="text-sm text-gray-600">8514 Preston Hwy, Louisville, KY 40219. Estacionamiento disponible.</p>
+              <h3 className="font-semibold text-navy mb-1">{t("citas.strip.location.title", lang)}</h3>
+              <p className="text-sm text-gray-600">{t("citas.strip.location.desc", lang)}</p>
             </div>
           </div>
         </div>

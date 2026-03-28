@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function Footer() {
+  const { lang } = useLang();
+
   return (
     <footer className="bg-navy-dark text-gray-300">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -22,7 +28,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-sm leading-relaxed mb-4">
-              15 años sirviendo a la comunidad hispana de Louisville, KY con profesionalismo y dedicación.
+              {t("footer.brand.desc", lang)}
             </p>
             {/* Social */}
             <div className="flex gap-3">
@@ -55,46 +61,38 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Servicios</h4>
+            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">{t("footer.services", lang)}</h4>
             <ul className="space-y-2 text-sm">
-              {[
-                { href: "/taxes", label: "Taxes Individuales y Negocios" },
-                { href: "/notaria", label: "Notario Público" },
-                { href: "/inmigracion", label: "Inmigración" },
-                { href: "/negocios", label: "Registro de Negocios" },
-                { href: "/traducciones", label: "Traducciones" },
-                { href: "/taxes", label: "Trámites para Camioneros" },
-              ].map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} className="hover:text-gold transition-colors">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+              <li><Link href="/taxes" className="hover:text-gold transition-colors">{t("footer.services.taxes", lang)}</Link></li>
+              <li><Link href="/notaria" className="hover:text-gold transition-colors">{t("footer.services.notaria", lang)}</Link></li>
+              <li><Link href="/inmigracion" className="hover:text-gold transition-colors">{t("footer.services.inmigracion", lang)}</Link></li>
+              <li><Link href="/negocios" className="hover:text-gold transition-colors">{t("footer.services.negocios", lang)}</Link></li>
+              <li><Link href="/traducciones" className="hover:text-gold transition-colors">{t("footer.services.traducciones", lang)}</Link></li>
+              <li><Link href="/taxes" className="hover:text-gold transition-colors">{t("footer.services.camioneros", lang)}</Link></li>
             </ul>
           </div>
 
           {/* Info */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Información</h4>
+            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">{t("footer.info", lang)}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-gold transition-colors">Inicio</Link></li>
-              <li><Link href="/contacto" className="hover:text-gold transition-colors">Contacto</Link></li>
-              <li><Link href="/citas" className="hover:text-gold transition-colors">Agendar Cita</Link></li>
+              <li><Link href="/" className="hover:text-gold transition-colors">{t("footer.info.inicio", lang)}</Link></li>
+              <li><Link href="/contacto" className="hover:text-gold transition-colors">{t("footer.info.contacto", lang)}</Link></li>
+              <li><Link href="/citas" className="hover:text-gold transition-colors">{t("footer.info.citas", lang)}</Link></li>
             </ul>
             <div className="mt-6">
-              <h4 className="text-white font-semibold mb-3 text-sm uppercase tracking-wider">Horario</h4>
+              <h4 className="text-white font-semibold mb-3 text-sm uppercase tracking-wider">{t("footer.horario", lang)}</h4>
               <div className="text-sm space-y-1">
-                <p>Lun – Vie: <span className="text-gold">10:00 AM – 6:00 PM</span></p>
-                <p>Sábado: <span className="text-gold">10:00 AM – 5:00 PM</span></p>
-                <p>Domingo: <span className="text-gray-500">Cerrado</span></p>
+                <p>{t("footer.horario.lv", lang)} <span className="text-gold">10:00 AM – 6:00 PM</span></p>
+                <p>{t("footer.horario.sab", lang)} <span className="text-gold">10:00 AM – 5:00 PM</span></p>
+                <p>{t("footer.horario.dom", lang)}: <span className="text-gray-500">{t("footer.horario.cerrado", lang)}</span></p>
               </div>
             </div>
           </div>
 
           {/* Contact */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contacto</h4>
+            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">{t("footer.contacto", lang)}</h4>
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
                 <svg className="w-4 h-4 text-gold mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -107,8 +105,8 @@ export default function Footer() {
                   <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
                 </svg>
                 <div>
-                  <a href="tel:5026547076" className="hover:text-gold block">(502) 654-7076 Oficina</a>
-                  <a href="tel:5026441312" className="hover:text-gold block">(502) 644-1312 Cell</a>
+                  <a href="tel:5026547076" className="hover:text-gold block">(502) 654-7076 {t("footer.oficina", lang)}</a>
+                  <a href="tel:5026441312" className="hover:text-gold block">(502) 644-1312 {t("footer.cell", lang)}</a>
                   <a href="tel:5028904772" className="hover:text-gold block">(502) 890-4772</a>
                 </div>
               </div>
@@ -125,8 +123,8 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-navy mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} 3-1 Notary A Plus. Todos los derechos reservados.</p>
-          <p>Myrna Rodríguez — Agente Certificada y Aceptada por el IRS</p>
+          <p>&copy; {new Date().getFullYear()} 3-1 Notary A Plus. {t("footer.rights", lang)}</p>
+          <p>{t("footer.agent", lang)}</p>
         </div>
       </div>
     </footer>

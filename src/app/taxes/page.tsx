@@ -1,92 +1,66 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "Preparación de Taxes Louisville KY | Individuales y Negocios",
-  description:
-    "Taxes individuales, de corporación, negocios, venta y locales. Taxes para camioneros: IRP, IFTA, KYU. Agente certificada IRS en Louisville, KY. Llama al 502-654-7076.",
-  keywords: [
-    "taxes louisville ky",
-    "preparacion de taxes louisville",
-    "tax preparation louisville",
-    "taxes individuales louisville",
-    "taxes negocios louisville",
-    "taxes camioneros louisville",
-    "IFTA KYU IRP louisville",
-    "agente IRS louisville",
-    "income tax louisville kentucky",
-  ],
-  alternates: { canonical: "/taxes" },
-};
-
-const taxServices = [
-  {
-    title: "Taxes Individuales",
-    desc: "Preparación de declaraciones de impuestos para individuos y familias. Maximizamos tu reembolso y aseguramos el cumplimiento con el IRS.",
-    items: [
-      "Federal y Estatal",
-      "Residentes y No Residentes",
-      "Múltiples fuentes de ingreso",
-      "Deducciones maximizadas",
-      "Representación ante el IRS",
-    ],
-    docs: ["W-2, 1099s", "ID o pasaporte", "Número de Seguro Social o ITIN", "Comprobantes de deducciones"],
-  },
-  {
-    title: "Taxes de Corporación y Negocios",
-    desc: "Declaraciones de impuestos para LLC, corporations, sole proprietorships y partnerships. Cumplimiento total con las regulaciones federales y estatales.",
-    items: [
-      "LLC, Corp, S-Corp, Partnership",
-      "Taxes de Nómina (Payroll)",
-      "Taxes Estimados Trimestrales",
-      "Planificación Fiscal",
-      "Resolución de problemas con el IRS",
-    ],
-    docs: ["EIN del negocio", "Estados financieros del año", "Registros de gastos", "Extractos bancarios"],
-  },
-  {
-    title: "Taxes de Venta y Locales",
-    desc: "Manejo de impuestos sobre ventas y impuestos locales para negocios que operan en Kentucky y otros estados.",
-    items: [
-      "Sales Tax de Kentucky",
-      "Taxes de la Ciudad de Louisville",
-      "Reporte y declaración mensual/trimestral",
-      "Registro de Sales Tax",
-    ],
-    docs: [],
-  },
-  {
-    title: "Trámites para Camioneros (IRP, IFTA, KYU)",
-    desc: "Servicios especializados para propietarios de vehículos comerciales y camioneros independientes.",
-    items: [
-      "IRP — International Registration Plan",
-      "IFTA — International Fuel Tax Agreement",
-      "KYU — Kentucky Unified Carrier Registration",
-      "Renovaciones anuales",
-      "Nuevos registros y transferencias",
-    ],
-    docs: ["Título del vehículo", "DOT Number", "Registros de millaje por estado", "Registros de combustible"],
-  },
-];
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function TaxesPage() {
+  const { lang } = useLang();
+
+  const taxServices = [
+    {
+      titleKey: "taxes.s1.title",
+      descKey: "taxes.s1.desc",
+      items: [
+        t("taxes.s1.i1", lang), t("taxes.s1.i2", lang), t("taxes.s1.i3", lang),
+        t("taxes.s1.i4", lang), t("taxes.s1.i5", lang),
+      ],
+      docs: [t("taxes.s1.d1", lang), t("taxes.s1.d2", lang), t("taxes.s1.d3", lang), t("taxes.s1.d4", lang)],
+    },
+    {
+      titleKey: "taxes.s2.title",
+      descKey: "taxes.s2.desc",
+      items: [
+        t("taxes.s2.i1", lang), t("taxes.s2.i2", lang), t("taxes.s2.i3", lang),
+        t("taxes.s2.i4", lang), t("taxes.s2.i5", lang),
+      ],
+      docs: [t("taxes.s2.d1", lang), t("taxes.s2.d2", lang), t("taxes.s2.d3", lang), t("taxes.s2.d4", lang)],
+    },
+    {
+      titleKey: "taxes.s3.title",
+      descKey: "taxes.s3.desc",
+      items: [
+        t("taxes.s3.i1", lang), t("taxes.s3.i2", lang), t("taxes.s3.i3", lang), t("taxes.s3.i4", lang),
+      ],
+      docs: [],
+    },
+    {
+      titleKey: "taxes.s4.title",
+      descKey: "taxes.s4.desc",
+      items: [
+        t("taxes.s4.i1", lang), t("taxes.s4.i2", lang), t("taxes.s4.i3", lang),
+        t("taxes.s4.i4", lang), t("taxes.s4.i5", lang),
+      ],
+      docs: [t("taxes.s4.d1", lang), t("taxes.s4.d2", lang), t("taxes.s4.d3", lang), t("taxes.s4.d4", lang)],
+    },
+  ];
+
   return (
     <>
       {/* Hero */}
       <section className="bg-navy py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
-            <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">Inicio</Link>
+            <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">{t("taxes.breadcrumb", lang)}</Link>
             <span className="text-gray-600">/</span>
-            <span className="text-gold text-sm">Taxes</span>
+            <span className="text-gold text-sm">{t("taxes.breadcrumb.current", lang)}</span>
           </div>
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Servicios de Taxes
+              {t("taxes.hero.title", lang)}
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed">
-              Agente certificada y aceptada por el IRS. 15 años de experiencia preparando taxes individuales, corporativos
-              y trámites especializados para camioneros.
+              {t("taxes.hero.desc", lang)}
             </p>
           </div>
         </div>
@@ -98,26 +72,24 @@ export default function TaxesPage() {
           <div className="bg-white rounded-2xl p-6 flex flex-col sm:flex-row gap-6 items-start shadow-sm border border-mint">
             <div className="flex-1">
               <h2 className="text-xl font-bold text-navy mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-                ¿Por qué elegirnos para tus taxes?
+                {t("taxes.why.title", lang)}
               </h2>
               <p className="text-gray-700 text-sm leading-relaxed">
-                Myrna Rodríguez es una agente certificada y aceptada por el IRS con más de 15 años de experiencia.
-                Preparamos tus impuestos con precisión, maximizamos tu reembolso y te representamos ante el IRS si
-                es necesario. Atención completamente en español.
+                {t("taxes.why.desc", lang)}
               </p>
             </div>
             <div className="flex flex-col gap-2 shrink-0">
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <svg className="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                Certificada por el IRS
+                {t("taxes.why.check1", lang)}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <svg className="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                15+ años de experiencia
+                {t("taxes.why.check2", lang)}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <svg className="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                Atención en español
+                {t("taxes.why.check3", lang)}
               </div>
             </div>
           </div>
@@ -129,7 +101,7 @@ export default function TaxesPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="space-y-8">
             {taxServices.map((service, i) => (
-              <div key={service.title} className="card">
+              <div key={service.titleKey} className="card">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2">
                     <div className="flex items-center gap-3 mb-3">
@@ -137,10 +109,10 @@ export default function TaxesPage() {
                         {i + 1}
                       </div>
                       <h3 className="text-2xl font-bold text-navy" style={{ fontFamily: "'Playfair Display', serif" }}>
-                        {service.title}
+                        {t(service.titleKey, lang)}
                       </h3>
                     </div>
-                    <p className="text-gray-700 mb-4 leading-relaxed">{service.desc}</p>
+                    <p className="text-gray-700 mb-4 leading-relaxed">{t(service.descKey, lang)}</p>
                     <ul className="space-y-2">
                       {service.items.map((item) => (
                         <li key={item} className="flex items-center gap-2 text-sm text-gray-700">
@@ -154,7 +126,7 @@ export default function TaxesPage() {
                   </div>
                   {service.docs.length > 0 && (
                     <div className="bg-mint-light rounded-xl p-4">
-                      <h4 className="font-semibold text-navy mb-3 text-sm">Documentos Necesarios:</h4>
+                      <h4 className="font-semibold text-navy mb-3 text-sm">{t("taxes.docs.title", lang)}</h4>
                       <ul className="space-y-2">
                         {service.docs.map((doc) => (
                           <li key={doc} className="text-sm text-gray-600 flex items-start gap-2">
@@ -178,13 +150,13 @@ export default function TaxesPage() {
       <section className="bg-navy py-14">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-            ¿Listo para hacer tus taxes?
+            {t("taxes.cta.title", lang)}
           </h2>
           <p className="text-gray-300 mb-8">
-            Agenda tu cita hoy. Te ayudamos a maximizar tu reembolso y cumplir con todos los requisitos del IRS.
+            {t("taxes.cta.desc", lang)}
           </p>
           <Link href="/citas" className="btn-gold text-base px-8 py-4">
-            Agendar Cita Ahora
+            {t("taxes.cta.btn", lang)}
           </Link>
         </div>
       </section>

@@ -1,85 +1,69 @@
-import Link from "next/link";
+"use client";
 
-const allServices = [
-  {
-    href: "/taxes",
-    color: "bg-blue-50 border-blue-200",
-    iconBg: "bg-blue-100",
-    title: "Taxes",
-    items: [
-      "Taxes Individuales",
-      "Taxes de Corporación",
-      "Taxes de Negocios",
-      "Taxes de Venta",
-      "Taxes Locales",
-      "IRP · IFTA · KYU (Camioneros)",
-    ],
-  },
-  {
-    href: "/notaria",
-    color: "bg-purple-50 border-purple-200",
-    iconBg: "bg-purple-100",
-    title: "Notaría Pública",
-    items: [
-      "Notario Público Certificado",
-      "Autenticación de Documentos",
-      "Contratos y Poderes Notariales",
-      "Interpretación Oficial",
-      "Certificación de Firmas",
-    ],
-  },
-  {
-    href: "/inmigracion",
-    color: "bg-green-50 border-green-200",
-    iconBg: "bg-green-100",
-    title: "Inmigración",
-    items: [
-      "Llenado de Formularios de Inmigración",
-      "Clases de Ciudadanía",
-      "Pasaporte Cubano/Americano",
-      "Trámites Consulares",
-      "Servicios de Interpretación",
-      "Renovación de Documentos",
-    ],
-  },
-  {
-    href: "/negocios",
-    color: "bg-orange-50 border-orange-200",
-    iconBg: "bg-orange-100",
-    title: "Negocios",
-    items: [
-      "Registro de Negocios",
-      "Estructuración Empresarial",
-      "Contabilidad y Nóminas",
-      "Número de ITIN",
-      "Licencias y Permisos",
-    ],
-  },
-  {
-    href: "/traducciones",
-    color: "bg-teal-50 border-teal-200",
-    iconBg: "bg-teal-100",
-    title: "Traducciones",
-    items: [
-      "Traducciones Profesionales",
-      "Certificación de Notas",
-      "Títulos Universitarios",
-      "Certificados de Nacimiento",
-      "Documentos Legales",
-    ],
-  },
-];
+import Link from "next/link";
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function ServiciosPage() {
+  const { lang } = useLang();
+
+  const allServices = [
+    {
+      href: "/taxes",
+      color: "bg-blue-50 border-blue-200",
+      titleKey: "servicios.taxes.title",
+      items: [
+        t("servicios.taxes.i1", lang), t("servicios.taxes.i2", lang), t("servicios.taxes.i3", lang),
+        t("servicios.taxes.i4", lang), t("servicios.taxes.i5", lang), t("servicios.taxes.i6", lang),
+      ],
+    },
+    {
+      href: "/notaria",
+      color: "bg-purple-50 border-purple-200",
+      titleKey: "servicios.notaria.title",
+      items: [
+        t("servicios.notaria.i1", lang), t("servicios.notaria.i2", lang), t("servicios.notaria.i3", lang),
+        t("servicios.notaria.i4", lang), t("servicios.notaria.i5", lang),
+      ],
+    },
+    {
+      href: "/inmigracion",
+      color: "bg-green-50 border-green-200",
+      titleKey: "servicios.inmigracion.title",
+      items: [
+        t("servicios.inmigracion.i1", lang), t("servicios.inmigracion.i2", lang), t("servicios.inmigracion.i3", lang),
+        t("servicios.inmigracion.i4", lang), t("servicios.inmigracion.i5", lang), t("servicios.inmigracion.i6", lang),
+      ],
+    },
+    {
+      href: "/negocios",
+      color: "bg-orange-50 border-orange-200",
+      titleKey: "servicios.negocios.title",
+      items: [
+        t("servicios.negocios.i1", lang), t("servicios.negocios.i2", lang), t("servicios.negocios.i3", lang),
+        t("servicios.negocios.i4", lang), t("servicios.negocios.i5", lang),
+      ],
+    },
+    {
+      href: "/traducciones",
+      color: "bg-teal-50 border-teal-200",
+      titleKey: "servicios.traducciones.title",
+      items: [
+        t("servicios.traducciones.i1", lang), t("servicios.traducciones.i2", lang), t("servicios.traducciones.i3", lang),
+        t("servicios.traducciones.i4", lang), t("servicios.traducciones.i5", lang),
+      ],
+    },
+  ];
+
   return (
     <>
       <section className="bg-navy py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Todos Nuestros Servicios
+            {t("servicios.hero.title", lang)}
           </h1>
           <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            Soluciones profesionales para individuos, familias y negocios en Louisville, KY
+            {t("servicios.hero.desc", lang)}
           </p>
         </div>
       </section>
@@ -88,10 +72,10 @@ export default function ServiciosPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {allServices.map((s) => (
-              <Link key={s.title} href={s.href} className="group">
+              <Link key={s.titleKey} href={s.href} className="group">
                 <div className={`card border ${s.color} h-full group-hover:-translate-y-1 transition-transform`}>
                   <h3 className="text-xl font-bold text-navy mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    {s.title}
+                    {t(s.titleKey, lang)}
                   </h3>
                   <ul className="space-y-2">
                     {s.items.map((item) => (
@@ -105,7 +89,7 @@ export default function ServiciosPage() {
                   </ul>
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <span className="text-gold font-semibold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                      Ver detalle
+                      {t("servicios.detail", lang)}
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
@@ -121,14 +105,14 @@ export default function ServiciosPage() {
       <section className="bg-navy py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-            ¿No encuentras lo que buscas?
+            {t("servicios.cta.title", lang)}
           </h2>
           <p className="text-gray-300 mb-8">
-            Contáctanos directamente. Estamos aquí para ayudarte con cualquier trámite.
+            {t("servicios.cta.desc", lang)}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/citas" className="btn-gold">Agendar Cita</Link>
-            <Link href="/contacto" className="btn-outline-white">Contactarnos</Link>
+            <Link href="/citas" className="btn-gold">{t("servicios.cta.btn1", lang)}</Link>
+            <Link href="/contacto" className="btn-outline-white">{t("servicios.cta.btn2", lang)}</Link>
           </div>
         </div>
       </section>

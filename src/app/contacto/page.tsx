@@ -1,16 +1,32 @@
+"use client";
+
 import Link from "next/link";
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function ContactoPage() {
+  const { lang } = useLang();
+
+  const hours = [
+    { dayKey: "contacto.hours.lunes", hours: "10:00 AM – 6:00 PM", open: true },
+    { dayKey: "contacto.hours.martes", hours: "10:00 AM – 6:00 PM", open: true },
+    { dayKey: "contacto.hours.miercoles", hours: "10:00 AM – 6:00 PM", open: true },
+    { dayKey: "contacto.hours.jueves", hours: "10:00 AM – 6:00 PM", open: true },
+    { dayKey: "contacto.hours.viernes", hours: "10:00 AM – 6:00 PM", open: true },
+    { dayKey: "contacto.hours.sabado", hours: "10:00 AM – 5:00 PM", open: true },
+    { dayKey: "contacto.hours.domingo", hours: "", open: false },
+  ];
+
   return (
     <>
       {/* Hero */}
       <section className="bg-navy py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Contáctanos
+            {t("contacto.hero.title", lang)}
           </h1>
           <p className="text-gray-300 text-lg max-w-xl mx-auto">
-            Estamos aquí para ayudarte. No dudes en llamarnos, escribirnos o visitarnos en nuestra oficina.
+            {t("contacto.hero.desc", lang)}
           </p>
         </div>
       </section>
@@ -26,13 +42,13 @@ export default function ContactoPage() {
                   <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Teléfonos</h3>
+              <h3 className="text-lg font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>{t("contacto.phones.title", lang)}</h3>
               <div className="space-y-2">
                 <a href="tel:5026547076" className="block text-gray-700 hover:text-gold transition-colors font-medium">
-                  (502) 654-7076 — Oficina
+                  (502) 654-7076 — {t("contacto.phones.oficina", lang)}
                 </a>
                 <a href="tel:5026441312" className="block text-gray-700 hover:text-gold transition-colors font-medium">
-                  (502) 644-1312 — Cell
+                  (502) 644-1312 — {t("contacto.phones.cell", lang)}
                 </a>
                 <a href="tel:5028904772" className="block text-gray-700 hover:text-gold transition-colors font-medium">
                   (502) 890-4772
@@ -47,14 +63,14 @@ export default function ContactoPage() {
                   <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Correo Electrónico</h3>
+              <h3 className="text-lg font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>{t("contacto.email.title", lang)}</h3>
               <a
                 href="mailto:notaryaplus3_1@yahoo.com"
                 className="text-gray-700 hover:text-gold transition-colors font-medium break-all"
               >
                 notaryaplus3_1@yahoo.com
               </a>
-              <p className="text-xs text-gray-500 mt-2">Respondemos en menos de 24 horas</p>
+              <p className="text-xs text-gray-500 mt-2">{t("contacto.email.response", lang)}</p>
             </div>
 
             {/* Location */}
@@ -64,7 +80,7 @@ export default function ContactoPage() {
                   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Dirección</h3>
+              <h3 className="text-lg font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>{t("contacto.address.title", lang)}</h3>
               <p className="text-gray-700 font-medium">8514 Preston Hwy</p>
               <p className="text-gray-700 font-medium">Louisville, KY 40219</p>
               <a
@@ -73,7 +89,7 @@ export default function ContactoPage() {
                 rel="noopener noreferrer"
                 className="text-gold text-sm mt-2 inline-block hover:underline"
               >
-                Ver en Google Maps →
+                {t("contacto.address.maps", lang)}
               </a>
             </div>
           </div>
@@ -83,22 +99,14 @@ export default function ContactoPage() {
             {/* Hours */}
             <div className="card">
               <h3 className="text-xl font-bold text-navy mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Horario de Atención
+                {t("contacto.hours.title", lang)}
               </h3>
               <div className="space-y-3">
-                {[
-                  { day: "Lunes", hours: "10:00 AM – 6:00 PM", open: true },
-                  { day: "Martes", hours: "10:00 AM – 6:00 PM", open: true },
-                  { day: "Miércoles", hours: "10:00 AM – 6:00 PM", open: true },
-                  { day: "Jueves", hours: "10:00 AM – 6:00 PM", open: true },
-                  { day: "Viernes", hours: "10:00 AM – 6:00 PM", open: true },
-                  { day: "Sábado", hours: "10:00 AM – 5:00 PM", open: true },
-                  { day: "Domingo", hours: "Cerrado", open: false },
-                ].map((item) => (
-                  <div key={item.day} className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
-                    <span className="text-sm font-medium text-gray-700">{item.day}</span>
+                {hours.map((item) => (
+                  <div key={item.dayKey} className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
+                    <span className="text-sm font-medium text-gray-700">{t(item.dayKey, lang)}</span>
                     <span className={`text-sm ${item.open ? "text-navy font-medium" : "text-gray-400"}`}>
-                      {item.hours}
+                      {item.open ? item.hours : t("contacto.hours.cerrado", lang)}
                     </span>
                   </div>
                 ))}
@@ -109,7 +117,7 @@ export default function ContactoPage() {
             <div className="space-y-6">
               <div className="card">
                 <h3 className="text-xl font-bold text-navy mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Redes Sociales
+                  {t("contacto.social.title", lang)}
                 </h3>
                 <div className="space-y-3">
                   <a
@@ -140,7 +148,7 @@ export default function ContactoPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">Facebook Personal</p>
+                      <p className="text-sm font-semibold text-gray-800">{t("contacto.social.fb.personal", lang)}</p>
                       <p className="text-xs text-gray-500">Myrna Chacón</p>
                     </div>
                   </a>
@@ -167,13 +175,13 @@ export default function ContactoPage() {
 
               <div className="card bg-gold/10 border border-gold/30">
                 <h3 className="text-lg font-bold text-navy mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  ¿Prefieres agendar una cita?
+                  {t("contacto.cta.title", lang)}
                 </h3>
                 <p className="text-sm text-gray-700 mb-4">
-                  Selecciona el servicio, la fecha y el horario que mejor te convenga.
+                  {t("contacto.cta.desc", lang)}
                 </p>
                 <Link href="/citas" className="btn-gold block text-center w-full">
-                  Agendar Cita Online
+                  {t("contacto.cta.btn", lang)}
                 </Link>
               </div>
             </div>
@@ -188,7 +196,7 @@ export default function ContactoPage() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="3-1 Notary A Plus — Ubicación"
+                title={t("contacto.map.title", lang)}
               ></iframe>
             </div>
           </div>

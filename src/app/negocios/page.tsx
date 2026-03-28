@@ -1,97 +1,66 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "Registro de Negocios Louisville KY | ITIN y Contabilidad",
-  description:
-    "Registro y estructuración de negocios, número ITIN, contabilidad, nóminas, licencias y permisos en Louisville, KY. Agente certificada IRS. Llama al 502-654-7076.",
-  keywords: [
-    "registro negocios louisville ky",
-    "ITIN louisville",
-    "abrir negocio louisville",
-    "LLC louisville kentucky",
-    "contabilidad pequenas empresas louisville",
-    "nominas louisville",
-    "licencias negocios louisville",
-    "EIN louisville",
-  ],
-  alternates: { canonical: "/negocios" },
-};
-
-const businessServices = [
-  {
-    title: "Registro y Estructuración de Negocios",
-    desc: "Te ayudamos a constituir tu negocio de forma legal y correcta en Kentucky. Elegimos juntos la estructura más conveniente para ti.",
-    items: [
-      "LLC (Limited Liability Company)",
-      "Sole Proprietorship",
-      "Corporation (C-Corp / S-Corp)",
-      "Partnership",
-      "Registro con el estado de Kentucky",
-      "Obtención del EIN (Tax ID del negocio)",
-    ],
-    docs: ["Identificación válida", "Nombre del negocio deseado", "Dirección del negocio", "Socios (si aplica)"],
-  },
-  {
-    title: "Contabilidad y Nóminas",
-    desc: "Mantén tus finanzas en orden y cumple con todas las obligaciones fiscales de tu pequeña empresa.",
-    items: [
-      "Contabilidad mensual/trimestral",
-      "Nóminas de pago (Payroll)",
-      "Reportes financieros",
-      "Conciliaciones bancarias",
-      "Preparación para declaración de taxes",
-      "Registros de gastos e ingresos",
-    ],
-    docs: [],
-  },
-  {
-    title: "Número de ITIN",
-    desc: "¿No tienes número de Seguro Social? El ITIN te permite cumplir con tus obligaciones fiscales y acceder a beneficios.",
-    items: [
-      "Aplicación inicial de ITIN (W-7)",
-      "Renovación de ITIN vencido",
-      "ITIN para dependientes",
-      "Preparación y envío de formularios",
-      "Seguimiento de la solicitud",
-    ],
-    docs: [
-      "Pasaporte original o certificado de nacimiento con foto",
-      "Formulario W-7 completado",
-      "Declaración de taxes del año corriente",
-    ],
-  },
-  {
-    title: "Licencias y Permisos",
-    desc: "Obtén todas las licencias necesarias para operar tu negocio legalmente en Louisville y Kentucky.",
-    items: [
-      "Licencia de negocio de Louisville",
-      "Permisos estatales de Kentucky",
-      "Registro de Sales Tax",
-      "Licencias de industrias específicas",
-      "Renovaciones anuales",
-    ],
-    docs: [],
-  },
-];
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function NegociosPage() {
+  const { lang } = useLang();
+
+  const businessServices = [
+    {
+      titleKey: "negocios.s1.title",
+      descKey: "negocios.s1.desc",
+      items: [
+        t("negocios.s1.i1", lang), t("negocios.s1.i2", lang), t("negocios.s1.i3", lang),
+        t("negocios.s1.i4", lang), t("negocios.s1.i5", lang), t("negocios.s1.i6", lang),
+      ],
+      docs: [t("negocios.s1.d1", lang), t("negocios.s1.d2", lang), t("negocios.s1.d3", lang), t("negocios.s1.d4", lang)],
+    },
+    {
+      titleKey: "negocios.s2.title",
+      descKey: "negocios.s2.desc",
+      items: [
+        t("negocios.s2.i1", lang), t("negocios.s2.i2", lang), t("negocios.s2.i3", lang),
+        t("negocios.s2.i4", lang), t("negocios.s2.i5", lang), t("negocios.s2.i6", lang),
+      ],
+      docs: [],
+    },
+    {
+      titleKey: "negocios.s3.title",
+      descKey: "negocios.s3.desc",
+      items: [
+        t("negocios.s3.i1", lang), t("negocios.s3.i2", lang), t("negocios.s3.i3", lang),
+        t("negocios.s3.i4", lang), t("negocios.s3.i5", lang),
+      ],
+      docs: [t("negocios.s3.d1", lang), t("negocios.s3.d2", lang), t("negocios.s3.d3", lang)],
+    },
+    {
+      titleKey: "negocios.s4.title",
+      descKey: "negocios.s4.desc",
+      items: [
+        t("negocios.s4.i1", lang), t("negocios.s4.i2", lang), t("negocios.s4.i3", lang),
+        t("negocios.s4.i4", lang), t("negocios.s4.i5", lang),
+      ],
+      docs: [],
+    },
+  ];
+
   return (
     <>
       <section className="bg-navy py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
-            <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">Inicio</Link>
+            <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">{t("negocios.breadcrumb", lang)}</Link>
             <span className="text-gray-600">/</span>
-            <span className="text-gold text-sm">Negocios</span>
+            <span className="text-gold text-sm">{t("negocios.breadcrumb.current", lang)}</span>
           </div>
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Servicios para Negocios
+              {t("negocios.hero.title", lang)}
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed">
-              Todo lo que necesitas para iniciar, registrar y mantener tu negocio en orden. Asesoría completa en español
-              para emprendedores y pequeñas empresas en Louisville, KY.
+              {t("negocios.hero.desc", lang)}
             </p>
           </div>
         </div>
@@ -101,7 +70,7 @@ export default function NegociosPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="space-y-6">
             {businessServices.map((service, i) => (
-              <div key={service.title} className="card">
+              <div key={service.titleKey} className="card">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2">
                     <div className="flex items-center gap-3 mb-3">
@@ -109,10 +78,10 @@ export default function NegociosPage() {
                         {i + 1}
                       </div>
                       <h3 className="text-2xl font-bold text-navy" style={{ fontFamily: "'Playfair Display', serif" }}>
-                        {service.title}
+                        {t(service.titleKey, lang)}
                       </h3>
                     </div>
-                    <p className="text-gray-700 mb-4 leading-relaxed">{service.desc}</p>
+                    <p className="text-gray-700 mb-4 leading-relaxed">{t(service.descKey, lang)}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {service.items.map((item) => (
                         <div key={item} className="flex items-center gap-2 text-sm text-gray-700">
@@ -126,7 +95,7 @@ export default function NegociosPage() {
                   </div>
                   {service.docs.length > 0 && (
                     <div className="bg-mint-light rounded-xl p-4 border border-mint">
-                      <h4 className="font-semibold text-navy mb-3 text-sm">Documentos Necesarios:</h4>
+                      <h4 className="font-semibold text-navy mb-3 text-sm">{t("negocios.docs.title", lang)}</h4>
                       <ul className="space-y-2">
                         {service.docs.map((doc) => (
                           <li key={doc} className="text-sm text-gray-600 flex items-start gap-2">
@@ -149,13 +118,13 @@ export default function NegociosPage() {
       <section className="bg-navy py-14">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-            ¿Listo para iniciar tu negocio?
+            {t("negocios.cta.title", lang)}
           </h2>
           <p className="text-gray-300 mb-8">
-            Te acompañamos desde el primer paso. Agenda una consulta sin costo.
+            {t("negocios.cta.desc", lang)}
           </p>
           <Link href="/citas" className="btn-gold text-base px-8 py-4">
-            Agendar Consulta
+            {t("negocios.cta.btn", lang)}
           </Link>
         </div>
       </section>

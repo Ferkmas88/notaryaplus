@@ -1,76 +1,90 @@
+"use client";
+
 import Link from "next/link";
-
-const services = [
-  {
-    href: "/taxes",
-    icon: (
-      <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-    title: "Taxes",
-    desc: "Taxes individuales y de corporación, taxes de negocios, venta y locales. Agente certificada y aceptada por el IRS.",
-  },
-  {
-    href: "/notaria",
-    icon: (
-      <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    ),
-    title: "Notaría Pública",
-    desc: "Notario Público certificado. Autenticación de documentos, contratos, poderes notariales e interpretación.",
-  },
-  {
-    href: "/inmigracion",
-    icon: (
-      <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    title: "Inmigración",
-    desc: "Formularios de inmigración, clases de ciudadanía, pasaportes y trámites consulares.",
-  },
-  {
-    href: "/negocios",
-    icon: (
-      <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-    ),
-    title: "Negocios",
-    desc: "Registro y estructuración de negocios, contabilidad, nóminas, número de ITIN y licencias.",
-  },
-  {
-    href: "/traducciones",
-    icon: (
-      <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-      </svg>
-    ),
-    title: "Traducciones",
-    desc: "Traducciones profesionales certificadas: títulos, notas académicas, certificados de nacimiento y más.",
-  },
-  {
-    href: "/taxes",
-    icon: (
-      <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-      </svg>
-    ),
-    title: "Camioneros",
-    desc: "Trámites especializados para camioneros: IRP, IFTA, KYU y registro de vehículos comerciales.",
-  },
-];
-
-const stats = [
-  { value: "15+", label: "Años de Experiencia" },
-  { value: "IRS", label: "Agente Certificada" },
-  { value: "100%", label: "Bilingüe" },
-  { value: "24h", label: "Respuesta Rápida" },
-];
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function Home() {
+  const { lang } = useLang();
+
+  const services = [
+    {
+      href: "/taxes",
+      icon: (
+        <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      title: t("home.service.taxes.title", lang),
+      desc: t("home.service.taxes.desc", lang),
+    },
+    {
+      href: "/notaria",
+      icon: (
+        <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+      title: t("home.service.notaria.title", lang),
+      desc: t("home.service.notaria.desc", lang),
+    },
+    {
+      href: "/inmigracion",
+      icon: (
+        <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      title: t("home.service.inmigracion.title", lang),
+      desc: t("home.service.inmigracion.desc", lang),
+    },
+    {
+      href: "/negocios",
+      icon: (
+        <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+      title: t("home.service.negocios.title", lang),
+      desc: t("home.service.negocios.desc", lang),
+    },
+    {
+      href: "/traducciones",
+      icon: (
+        <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+        </svg>
+      ),
+      title: t("home.service.traducciones.title", lang),
+      desc: t("home.service.traducciones.desc", lang),
+    },
+    {
+      href: "/taxes",
+      icon: (
+        <svg className="w-7 h-7 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+      ),
+      title: t("home.service.camioneros.title", lang),
+      desc: t("home.service.camioneros.desc", lang),
+    },
+  ];
+
+  const stats = [
+    { value: "15+", label: t("home.stats.years", lang) },
+    { value: "IRS", label: t("home.stats.irs", lang) },
+    { value: "100%", label: t("home.stats.bilingual", lang) },
+    { value: "24h", label: t("home.stats.response", lang) },
+  ];
+
+  const bullets = [
+    t("home.about.bullet1", lang),
+    t("home.about.bullet2", lang),
+    t("home.about.bullet3", lang),
+    t("home.about.bullet4", lang),
+    t("home.about.bullet5", lang),
+  ];
+
   return (
     <>
       {/* Hero */}
@@ -85,28 +99,27 @@ export default function Home() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 rounded-full px-4 py-1.5 mb-6">
               <span className="w-2 h-2 bg-gold rounded-full animate-pulse"></span>
-              <span className="text-gold text-sm font-medium">Agente Certificada y Aceptada por el IRS</span>
+              <span className="text-gold text-sm font-medium">{t("home.badge", lang)}</span>
             </div>
             <h1
               className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
-              3-1 Notary A Plus
-              <span className="block text-gold mt-2">Business & Tax Services</span>
+              {t("home.hero.title", lang)}
+              <span className="block text-gold mt-2">{t("home.hero.subtitle", lang)}</span>
             </h1>
             <p className="text-xl text-gray-300 mb-4 leading-relaxed">
-              <span className="text-gold font-semibold">15 años</span> sirviendo a nuestra comunidad con dedicación y
-              profesionalismo. Taxes, Notaría, Inmigración y más.
+              <span className="text-gold font-semibold">{t("home.hero.years", lang)}</span>{t("home.hero.desc", lang)}
             </p>
             <p className="text-gray-400 mb-10">
-              8514 Preston Hwy, Louisville, KY 40219 &nbsp;·&nbsp; Myrna Rodríguez
+              {t("home.hero.address", lang)}
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/citas" className="btn-gold text-base">
-                Agendar Cita Gratis
+                {t("home.hero.cta1", lang)}
               </Link>
               <Link href="/servicios" className="btn-outline-white text-base">
-                Ver Todos los Servicios
+                {t("home.hero.cta2", lang)}
               </Link>
             </div>
           </div>
@@ -143,9 +156,9 @@ export default function Home() {
       <section className="bg-mint-light py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-14">
-            <h2 className="section-title">Nuestros Servicios</h2>
+            <h2 className="section-title">{t("home.services.title", lang)}</h2>
             <p className="section-subtitle">
-              Ofrecemos una amplia gama de servicios profesionales para individuos, familias y negocios.
+              {t("home.services.subtitle", lang)}
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -158,7 +171,7 @@ export default function Home() {
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed mb-4">{s.desc}</p>
                   <span className="text-gold font-semibold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Ver más
+                    {t("home.services.more", lang)}
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -176,26 +189,17 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-block bg-gold/10 text-gold font-semibold text-sm px-4 py-1.5 rounded-full mb-4">
-                Sobre Nosotros
+                {t("home.about.tag", lang)}
               </div>
-              <h2 className="section-title">Myrna Rodríguez</h2>
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                Con más de <strong>15 años de experiencia</strong>, Myrna Rodríguez es una profesional certificada y aceptada
-                por el IRS, dedicada a brindar servicios de alta calidad a la comunidad hispana de Louisville, Kentucky.
-              </p>
+              <h2 className="section-title">{t("home.about.title", lang)}</h2>
+              <p className="text-gray-700 mb-4 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: t("home.about.p1", lang) }}
+              />
               <p className="text-gray-700 mb-6 leading-relaxed">
-                Su amplia experiencia abarca taxes individuales y de negocios, servicios notariales, trámites de
-                inmigración, registro de empresas, traducciones profesionales y mucho más. Hablamos su idioma y
-                entendemos sus necesidades.
+                {t("home.about.p2", lang)}
               </p>
               <ul className="space-y-3 mb-8">
-                {[
-                  "Agente Certificada y Aceptada por el IRS",
-                  "Notario Público Certificado",
-                  "Intérprete Certificada",
-                  "15+ años sirviendo a Louisville, KY",
-                  "Atención bilingüe (Español e Inglés)",
-                ].map((item) => (
+                {bullets.map((item) => (
                   <li key={item} className="flex items-center gap-3 text-gray-700">
                     <div className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center shrink-0">
                       <svg className="w-3 h-3 text-gold" fill="currentColor" viewBox="0 0 24 24">
@@ -207,7 +211,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link href="/citas" className="btn-gold inline-block">
-                Agendar una Consulta
+                {t("home.about.cta", lang)}
               </Link>
             </div>
             <div className="relative">
@@ -226,23 +230,23 @@ export default function Home() {
                     className="text-2xl font-bold text-navy mb-1"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
-                    Myrna Rodríguez
+                    {t("home.about.title", lang)}
                   </h3>
-                  <p className="text-gold font-semibold mb-1">Agente Certificada por el IRS</p>
-                  <p className="text-gray-600 text-sm mb-6">Notario Público · Intérprete Certificada</p>
+                  <p className="text-gold font-semibold mb-1">{t("home.about.role", lang)}</p>
+                  <p className="text-gray-600 text-sm mb-6">{t("home.about.role2", lang)}</p>
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                       <div className="text-2xl font-bold text-navy" style={{ fontFamily: "'Playfair Display', serif" }}>15+</div>
-                      <div className="text-xs text-gray-500">Años de Exp.</div>
+                      <div className="text-xs text-gray-500">{t("home.about.exp", lang)}</div>
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                       <div className="text-2xl font-bold text-gold" style={{ fontFamily: "'Playfair Display', serif" }}>IRS</div>
-                      <div className="text-xs text-gray-500">Certificada</div>
+                      <div className="text-xs text-gray-500">{t("home.about.cert", lang)}</div>
                     </div>
                   </div>
                   <div className="mt-4 bg-white rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-gray-600">
-                      <span className="font-semibold text-navy">Horario:</span> Lun–Vie 10am–6pm · Sáb 10am–5pm
+                      <span className="font-semibold text-navy">Horario:</span> {t("home.about.schedule", lang)}
                     </p>
                   </div>
                 </div>
@@ -259,17 +263,17 @@ export default function Home() {
             className="text-3xl md:text-4xl font-bold text-white mb-4"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            ¿Listo para comenzar?
+            {t("home.cta.title", lang)}
           </h2>
           <p className="text-gray-300 text-lg mb-8">
-            Agenda tu cita hoy mismo. Atención personalizada en español. Sin costo de consulta.
+            {t("home.cta.desc", lang)}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/citas" className="btn-gold text-base px-8 py-4">
-              Agendar Cita Ahora
+              {t("home.cta.btn1", lang)}
             </Link>
             <a href="tel:5026547076" className="btn-outline-white text-base px-8 py-4">
-              Llamar: (502) 654-7076
+              {t("home.cta.btn2", lang)}
             </a>
           </div>
         </div>
@@ -285,7 +289,7 @@ export default function Home() {
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title="Ubicación 3-1 Notary A Plus"
+          title={t("home.map.title", lang)}
         ></iframe>
       </section>
     </>

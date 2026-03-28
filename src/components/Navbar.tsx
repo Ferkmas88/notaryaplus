@@ -3,20 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const links = [
-  { href: "/", label: "Inicio" },
-  { href: "/taxes", label: "Taxes" },
-  { href: "/notaria", label: "Notaría" },
-  { href: "/inmigracion", label: "Inmigración" },
-  { href: "/negocios", label: "Negocios" },
-  { href: "/traducciones", label: "Traducciones" },
-  { href: "/contacto", label: "Contacto" },
-];
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { lang, setLang } = useLang();
+
+  const links = [
+    { href: "/", label: t("nav.inicio", lang) },
+    { href: "/taxes", label: t("nav.taxes", lang) },
+    { href: "/notaria", label: t("nav.notaria", lang) },
+    { href: "/inmigracion", label: t("nav.inmigracion", lang) },
+    { href: "/negocios", label: t("nav.negocios", lang) },
+    { href: "/traducciones", label: t("nav.traducciones", lang) },
+    { href: "/contacto", label: t("nav.contacto", lang) },
+  ];
 
   return (
     <>
@@ -43,9 +46,26 @@ export default function Navbar() {
               notaryaplus3_1@yahoo.com
             </a>
           </div>
-          <span className="hidden sm:block text-gold font-medium">
-            Lun–Vie: 10am–6pm &nbsp;|&nbsp; Sáb: 10am–5pm
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:block text-gold font-medium">
+              {t("nav.horario", lang)}
+            </span>
+            {/* Language toggle */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setLang("es")}
+                className={`text-xs px-2 py-0.5 rounded font-semibold transition-colors ${lang === "es" ? "text-gold border border-gold" : "text-gray-400 hover:text-white"}`}
+              >
+                ES
+              </button>
+              <button
+                onClick={() => setLang("en")}
+                className={`text-xs px-2 py-0.5 rounded font-semibold transition-colors ${lang === "en" ? "text-gold border border-gold" : "text-gray-400 hover:text-white"}`}
+              >
+                EN
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -87,7 +107,7 @@ export default function Navbar() {
               href="/citas"
               className="ml-3 bg-gold text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-gold-light transition-colors shadow-md"
             >
-              Agendar Cita
+              {t("nav.agendar", lang)}
             </Link>
           </div>
 
@@ -127,7 +147,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="mt-4 block text-center bg-gold text-white font-semibold px-5 py-3 rounded-full text-sm"
             >
-              Agendar Cita
+              {t("nav.agendar", lang)}
             </Link>
           </div>
         )}

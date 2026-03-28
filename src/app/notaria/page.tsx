@@ -1,75 +1,61 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "Notario Público Louisville KY | Autenticación de Documentos",
-  description:
-    "Notario Público certificado en Louisville, KY. Autenticación de documentos, contratos, poderes notariales, interpretación y traducción oficial. Llama al 502-654-7076.",
-  keywords: [
-    "notario publico louisville ky",
-    "notary public louisville",
-    "autenticacion documentos louisville",
-    "poder notarial louisville",
-    "notarization louisville kentucky",
-    "notario hispano louisville",
-  ],
-  alternates: { canonical: "/notaria" },
-};
-
-const notaryServices = [
-  {
-    title: "Notario Público Certificado",
-    desc: "Certificación y autenticación de documentos legales ante la ley. Myrna Rodríguez es Notario Público certificado en el estado de Kentucky.",
-    items: [
-      "Autenticación de firmas",
-      "Certificación de documentos",
-      "Juramentos y declaraciones juradas",
-      "Poderes notariales (Power of Attorney)",
-      "Contratos y acuerdos",
-      "Documentos para trámites gubernamentales",
-    ],
-  },
-  {
-    title: "Intérprete Certificada",
-    desc: "Servicios de interpretación profesional para trámites legales, médicos, laborales y personales. Interpretación en inglés y español.",
-    items: [
-      "Interpretación en citas médicas",
-      "Interpretación en trámites legales",
-      "Interpretación en reuniones de trabajo",
-      "Interpretación de contratos",
-      "Apoyo en audiencias judiciales (con autorización)",
-    ],
-  },
-  {
-    title: "Documentos Consulares",
-    desc: "Asistencia con documentos que requieren autenticación notarial para uso en consulados y embajadas.",
-    items: [
-      "Apostillas y legalizaciones",
-      "Documentos para consulados",
-      "Poderes para trámites en el extranjero",
-      "Cartas de autorización",
-      "Declaraciones notariales",
-    ],
-  },
-];
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 export default function NotariaPage() {
+  const { lang } = useLang();
+
+  const notaryServices = [
+    {
+      titleKey: "notaria.s1.title",
+      descKey: "notaria.s1.desc",
+      items: [
+        t("notaria.s1.i1", lang), t("notaria.s1.i2", lang), t("notaria.s1.i3", lang),
+        t("notaria.s1.i4", lang), t("notaria.s1.i5", lang), t("notaria.s1.i6", lang),
+      ],
+    },
+    {
+      titleKey: "notaria.s2.title",
+      descKey: "notaria.s2.desc",
+      items: [
+        t("notaria.s2.i1", lang), t("notaria.s2.i2", lang), t("notaria.s2.i3", lang),
+        t("notaria.s2.i4", lang), t("notaria.s2.i5", lang),
+      ],
+    },
+    {
+      titleKey: "notaria.s3.title",
+      descKey: "notaria.s3.desc",
+      items: [
+        t("notaria.s3.i1", lang), t("notaria.s3.i2", lang), t("notaria.s3.i3", lang),
+        t("notaria.s3.i4", lang), t("notaria.s3.i5", lang),
+      ],
+    },
+  ];
+
+  const bringItems = [
+    t("notaria.bring.i1", lang),
+    t("notaria.bring.i2", lang),
+    t("notaria.bring.i3", lang),
+    t("notaria.bring.i4", lang),
+  ];
+
   return (
     <>
       <section className="bg-navy py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
-            <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">Inicio</Link>
+            <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">{t("notaria.breadcrumb", lang)}</Link>
             <span className="text-gray-600">/</span>
-            <span className="text-gold text-sm">Notaría</span>
+            <span className="text-gold text-sm">{t("notaria.breadcrumb.current", lang)}</span>
           </div>
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Notaría Pública
+              {t("notaria.hero.title", lang)}
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed">
-              Notario Público e Intérprete Certificada al servicio de la comunidad en Louisville, KY. Autenticamos
-              tus documentos con la validez legal que necesitas.
+              {t("notaria.hero.desc", lang)}
             </p>
           </div>
         </div>
@@ -86,11 +72,10 @@ export default function NotariaPage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-navy mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Documentos con validez legal garantizada
+                  {t("notaria.info.title", lang)}
                 </h2>
                 <p className="text-gray-700 text-sm leading-relaxed">
-                  Un documento notariado tiene plena validez legal en Estados Unidos y puede ser reconocido
-                  internacionalmente. Nuestros servicios de notaría son rápidos, confiables y completamente en español.
+                  {t("notaria.info.desc", lang)}
                 </p>
               </div>
             </div>
@@ -98,16 +83,16 @@ export default function NotariaPage() {
 
           <div className="space-y-6">
             {notaryServices.map((service, i) => (
-              <div key={service.title} className="card">
+              <div key={service.titleKey} className="card">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 bg-gold text-white rounded-full flex items-center justify-center font-bold text-sm">
                     {i + 1}
                   </div>
                   <h3 className="text-2xl font-bold text-navy" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    {service.title}
+                    {t(service.titleKey, lang)}
                   </h3>
                 </div>
-                <p className="text-gray-700 mb-4 leading-relaxed">{service.desc}</p>
+                <p className="text-gray-700 mb-4 leading-relaxed">{t(service.descKey, lang)}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {service.items.map((item) => (
                     <div key={item} className="flex items-center gap-2 text-sm text-gray-700">
@@ -124,15 +109,10 @@ export default function NotariaPage() {
 
           <div className="mt-8 bg-gold/10 border border-gold/30 rounded-2xl p-6">
             <h3 className="text-lg font-bold text-navy mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-              ¿Qué traer para su cita?
+              {t("notaria.bring.title", lang)}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {[
-                "Identificación válida (ID, pasaporte o licencia de conducir)",
-                "Los documentos originales que desea notarizar",
-                "NO firme los documentos antes de la cita",
-                "Si requiere testigos, puede traerlos con ID válida",
-              ].map((item) => (
+              {bringItems.map((item) => (
                 <div key={item} className="flex items-start gap-2 text-sm text-gray-700">
                   <svg className="w-4 h-4 text-gold shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
@@ -148,13 +128,13 @@ export default function NotariaPage() {
       <section className="bg-navy py-14">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Necesitas un documento notariado
+            {t("notaria.cta.title", lang)}
           </h2>
           <p className="text-gray-300 mb-8">
-            Agenda tu cita hoy. Proceso rápido y profesional, completamente en español.
+            {t("notaria.cta.desc", lang)}
           </p>
           <Link href="/citas" className="btn-gold text-base px-8 py-4">
-            Agendar Cita
+            {t("notaria.cta.btn", lang)}
           </Link>
         </div>
       </section>
