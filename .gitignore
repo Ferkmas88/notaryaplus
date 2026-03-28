@@ -36,3 +36,11 @@ next-env.d.ts
 # Google Calendar credentials (upload manually to Hostinger)
 public/backend/google-config.php
 public/backend/auth.php
+public/backend/gcal-debug.php
+
+# Archivos locales que no van al repo
+*.msi
+*.zip
+*.py
+.playwright-mcp/
+.claude/settings.local.json
