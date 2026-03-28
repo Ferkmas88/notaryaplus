@@ -149,6 +149,21 @@ export default function Navbar() {
             >
               {t("nav.agendar", lang)}
             </Link>
+            {/* Language toggle mobile */}
+            <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-navy-light">
+              <button
+                onClick={() => setLang("es")}
+                className={`text-sm px-4 py-2 rounded-lg font-semibold transition-colors ${lang === "es" ? "bg-gold text-white" : "text-gray-400 border border-gray-600 hover:text-white"}`}
+              >
+                Español
+              </button>
+              <button
+                onClick={() => setLang("en")}
+                className={`text-sm px-4 py-2 rounded-lg font-semibold transition-colors ${lang === "en" ? "bg-gold text-white" : "text-gray-400 border border-gray-600 hover:text-white"}`}
+              >
+                English
+              </button>
+            </div>
           </div>
         )}
       </nav>
