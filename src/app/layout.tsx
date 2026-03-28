@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { LangProvider } from "@/contexts/LangContext";
 
 export const metadata: Metadata = {
   title: {
@@ -115,9 +116,11 @@ export default function RootLayout({
             }),
           }}
         />
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <LangProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </LangProvider>
       </body>
     </html>
   );
