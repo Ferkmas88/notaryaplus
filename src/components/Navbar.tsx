@@ -18,6 +18,7 @@ export default function Navbar() {
     { href: "/inmigracion", label: t("nav.inmigracion", lang) },
     { href: "/negocios", label: t("nav.negocios", lang) },
     { href: "/traducciones", label: t("nav.traducciones", lang) },
+    { href: "/contabilidad", label: t("nav.contabilidad", lang) },
     { href: "/contacto", label: t("nav.contacto", lang) },
   ];
 
@@ -74,8 +75,8 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full border-2 border-gold flex items-center justify-center bg-white">
-              <svg viewBox="0 0 40 40" className="w-7 h-7">
+            <div className="w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center bg-white">
+              <svg viewBox="0 0 40 40" className="w-9 h-9">
                 <circle cx="20" cy="20" r="18" fill="none" stroke="#C8A214" strokeWidth="2.5"/>
                 <path d="M10 20 L17 27 L30 13" stroke="#1B3356" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
               </svg>
