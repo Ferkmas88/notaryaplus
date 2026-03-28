@@ -353,7 +353,7 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // Citas page
     "citas.hero.title": "Agenda tu Cita",
-    "citas.hero.desc": "Selecciona el servicio, la fecha y la hora disponible. Sin costo de consulta.",
+    "citas.hero.desc": "Selecciona el servicio, la fecha y la hora disponible.",
     "citas.step1.label": "Servicio",
     "citas.step2.label": "Fecha y Hora",
     "citas.step3.label": "Tus Datos",
@@ -830,7 +830,7 @@ const translations: Record<Lang, Record<string, string>> = {
 
     // Citas page
     "citas.hero.title": "Book your Appointment",
-    "citas.hero.desc": "Select the service, date and available time slot. No consultation fee.",
+    "citas.hero.desc": "Select the service, date and available time slot.",
     "citas.step1.label": "Service",
     "citas.step2.label": "Date & Time",
     "citas.step3.label": "Your Info",
