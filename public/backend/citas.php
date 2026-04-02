@@ -266,6 +266,9 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
               <p style='margin:4px 0;font-size:13px;'><strong>Email:</strong> notaryaplus31@gmail.com</p>
             </div>
             <p style='margin-top:16px;font-size:13px;color:#666;'>Si necesitas cancelar o reprogramar, llámanos con al menos 24 horas de anticipación.</p>
+            <div style='margin-top:20px;text-align:center;'>
+              <a href='https://calendar.google.com/calendar/render?action=TEMPLATE&text=" . urlencode($serviceLabel . " — 3-1 Notary A Plus") . "&dates=" . str_replace('-', '', $appt['date']) . "T" . str_replace(':', '', $appt['time']) . "00/" . str_replace('-', '', $appt['date']) . "T" . sprintf('%02d', (int)substr($appt['time'], 0, 2) + 1) . substr($appt['time'], 2) . "00&details=" . urlencode("Cita en 3-1 Notary A Plus\nServicio: " . $serviceLabel . "\nID: " . $appt['id'] . "\nTeléfono: (502) 654-7076") . "&location=" . urlencode("8514 Preston Hwy, Louisville, KY 40219") . "&ctz=America/Kentucky/Louisville' target='_blank' style='display:inline-block;background:#C8A214;color:#fff;padding:12px 24px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:14px;'>Agregar al Calendario</a>
+            </div>
           </div>
           <div style='background:#1B3356;padding:16px;text-align:center;'>
             <p style='color:#C5E8D5;margin:0;font-size:12px;'>&copy; " . date('Y') . " 3-1 Notary A Plus — Myrna Rodríguez</p>

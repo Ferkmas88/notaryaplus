@@ -158,9 +158,22 @@ export default function CitasPage() {
             <p>(502) 654-7076 | (502) 644-1312</p>
             <p className="text-xs text-gray-500 mt-2">{t("citas.success.cancel", lang)}</p>
           </div>
-          <a href="/" className="btn-gold inline-block">
-            {t("citas.success.back", lang)}
-          </a>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent((selectedService?.label || "Cita") + " — 3-1 Notary A Plus")}&dates=${date.replace(/-/g, "")}T${time.replace(":", "")}00/${date.replace(/-/g, "")}T${String(parseInt(time.split(":")[0]) + 1).padStart(2, "0")}${time.split(":")[1]}00&details=${encodeURIComponent("Cita en 3-1 Notary A Plus\nServicio: " + (selectedService?.label || "") + "\nID: " + successId + "\nTeléfono: (502) 654-7076")}&location=${encodeURIComponent("8514 Preston Hwy, Louisville, KY 40219")}&ctz=America/Kentucky/Louisville`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-white border-2 border-navy text-navy font-semibold px-6 py-3 rounded-full text-sm hover:bg-navy hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {t("citas.success.addcalendar", lang)}
+            </a>
+            <a href="/" className="btn-gold inline-block px-6 py-3">
+              {t("citas.success.back", lang)}
+            </a>
+          </div>
         </div>
       </div>
     );
