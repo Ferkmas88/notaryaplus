@@ -12,15 +12,14 @@ $from = 'citas@' . $serverDomain;
 $headers  = "MIME-Version: 1.0\r\n";
 $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 $headers .= "From: 3-1 Notary A Plus <{$from}>\r\n";
-$headers .= "Reply-To: notaryaplus26@gmail.com\r\n";
+$headers .= "Reply-To: notaryaplus31@gmail.com\r\n";
 $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
 
 $subject = 'TEST Notary A Plus - ' . date('H:i:s');
 $body = '<h2>Email de prueba</h2><p>Si ves esto, el correo funciona desde Hostinger.</p><p>Enviado: ' . date('c') . '</p>';
 
 $emails = [
-    'notaryaplus26@gmail.com',
-    'notaryaplus3_1@yahoo.com',
+    'notaryaplus31@gmail.com',
     'ferkmas88@gmail.com',
 ];
 
