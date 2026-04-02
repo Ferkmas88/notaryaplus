@@ -13,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 $DATA_FILE      = __DIR__ . '/appointments.json';
 $CONTACT_EMAIL  = 'notaryaplus31@gmail.com';
-$CONTACT_EMAIL2 = 'ferkmas88@gmail.com';
+$CONTACT_EMAIL2 = 'notaryaplus3_1@yahoo.com';
+$CONTACT_EMAIL3 = 'ferkmas88@gmail.com';
 
 $BUSINESS_HOURS = [
     1 => ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"],
@@ -170,7 +171,7 @@ function formatTime12h($time24) {
     return "$h12:$m $period";
 }
 
-function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames) {
+function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames, $contactEmail3 = '') {
     $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
     $dateObj  = strtotime($appt['date'] . ' 12:00:00');
     $dayName  = $dayNames[date('w', $dateObj)];
@@ -215,8 +216,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
 
     $r1 = mail($contactEmail, $subject, $body, $headers, '-f ' . $fromEmail);
     $r2 = mail($contactEmail2, $subject, $body, $headers, '-f ' . $fromEmail);
-    error_log("NOTARY EMAIL: to={$contactEmail} result=" . ($r1 ? 'OK' : 'FAIL'));
-    error_log("NOTARY EMAIL: to={$contactEmail2} result=" . ($r2 ? 'OK' : 'FAIL'));
+    if ($contactEmail3) mail($contactEmail3, $subject, $body, $headers, '-f ' . $fromEmail);
 
     if (!empty($appt['email']) && strpos($appt['email'], '@') !== false) {
         $clientSubject = "Confirmación de Cita — {$dateStr} {$timeStr}";
@@ -372,7 +372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Ahora enviar emails y crear evento en Google Calendar (sin bloquear)
     try { gcalCreateEvent($newAppt, $token, $SERVICE_LABELS); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
-    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
+    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES, $CONTACT_EMAIL3); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 
     exit();
 }
