@@ -10,10 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 @include __DIR__ . '/google-config.php';
+require_once __DIR__ . '/phpmailer/PHPMailer.php';
+require_once __DIR__ . '/phpmailer/SMTP.php';
+require_once __DIR__ . '/phpmailer/Exception.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 $DATA_FILE      = __DIR__ . '/appointments.json';
 $CONTACT_EMAIL  = 'notaryaplus31@gmail.com';
 $CONTACT_EMAIL2 = 'notaryaplus3_1@yahoo.com';
+
+// SMTP config
+$SMTP_HOST = 'smtp.hostinger.com';
+$SMTP_PORT = 465;
+$SMTP_USER = 'citas@notaryaplus.com';
+$SMTP_PASS = 'Hhb~at1LR^z3';
 
 $BUSINESS_HOURS = [
     1 => ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"],
@@ -170,21 +182,29 @@ function formatTime12h($time24) {
     return "$h12:$m $period";
 }
 
-function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames, $contactEmail3 = '') {
+function createMailer() {
+    global $SMTP_HOST, $SMTP_PORT, $SMTP_USER, $SMTP_PASS;
+    $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host       = $SMTP_HOST;
+    $mail->SMTPAuth   = true;
+    $mail->Username   = $SMTP_USER;
+    $mail->Password   = $SMTP_PASS;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    $mail->Port       = $SMTP_PORT;
+    $mail->CharSet    = 'UTF-8';
+    $mail->isHTML(true);
+    $mail->setFrom($SMTP_USER, '3-1 Notary A Plus');
+    $mail->addReplyTo('notaryaplus31@gmail.com', '3-1 Notary A Plus');
+    return $mail;
+}
+
+function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames) {
     $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
     $dateObj  = strtotime($appt['date'] . ' 12:00:00');
     $dayName  = $dayNames[date('w', $dateObj)];
     $dateStr  = $dayName . ', ' . date('F j, Y', $dateObj);
     $timeStr  = formatTime12h($appt['time']);
-
-    // Usar el dominio real del servidor para el From
-    $serverDomain = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'notaryaplus.com';
-    $fromEmail = 'citas@' . $serverDomain;
-    $headers  = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: 3-1 Notary A Plus <{$fromEmail}>\r\n";
-    $headers .= "Reply-To: notaryaplus31@gmail.com\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
 
     $subject = "Nueva Cita: {$serviceLabel} — {$dateStr} {$timeStr}";
     $body = "
@@ -213,9 +233,16 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
       </div>
     </div>";
 
-    $r1 = mail($contactEmail, $subject, $body, $headers, '-f ' . $fromEmail);
-    $r2 = mail($contactEmail2, $subject, $body, $headers, '-f ' . $fromEmail);
-    if ($contactEmail3) mail($contactEmail3, $subject, $body, $headers, '-f ' . $fromEmail);
+    try {
+        $mail = createMailer();
+        $mail->addAddress($contactEmail);
+        $mail->addAddress($contactEmail2);
+        $mail->Subject = $subject;
+        $mail->Body    = $body;
+        $mail->send();
+    } catch (PHPMailerException $e) {
+        error_log("NOTARY SMTP ERROR (negocio): " . $e->getMessage());
+    }
 
     if (!empty($appt['email']) && strpos($appt['email'], '@') !== false) {
         $clientSubject = "Confirmación de Cita — {$dateStr} {$timeStr}";
@@ -245,8 +272,15 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
           </div>
         </div>";
 
-        $r4 = mail($appt['email'], $clientSubject, $clientBody, $headers, '-f ' . $fromEmail);
-        error_log("NOTARY EMAIL: to={$appt['email']} (cliente) result=" . ($r4 ? 'OK' : 'FAIL'));
+        try {
+            $mail2 = createMailer();
+            $mail2->addAddress($appt['email']);
+            $mail2->Subject = $clientSubject;
+            $mail2->Body    = $clientBody;
+            $mail2->send();
+        } catch (PHPMailerException $e) {
+            error_log("NOTARY SMTP ERROR (cliente): " . $e->getMessage());
+        }
     }
 }
 
@@ -371,7 +405,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Ahora enviar emails y crear evento en Google Calendar (sin bloquear)
     try { gcalCreateEvent($newAppt, $token, $SERVICE_LABELS); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
-    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES, $CONTACT_EMAIL3); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
+    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 
     exit();
 }
