@@ -1,0 +1,11 @@
+# No cachear HTML
+<FilesMatch "\.(html)$">
+  Header set Cache-Control "no-cache, no-store, must-revalidate"
+  Header set Pragma "no-cache"
+  Header set Expires 0
+</FilesMatch>
+
+# JS y CSS: cache corto (1 hora)
+<FilesMatch "\.(js|css)$">
+  Header set Cache-Control "public, max-age=3600, must-revalidate"
+</FilesMatch>
