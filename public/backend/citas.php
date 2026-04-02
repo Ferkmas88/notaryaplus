@@ -227,6 +227,9 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
         <div style='margin-top:16px;padding:12px;background:#EAF7EF;border-left:4px solid #C8A214;border-radius:4px;'>
           <p style='margin:0;font-size:13px;color:#1B3356;'>ID de Cita: <strong>{$appt['id']}</strong></p>
         </div>
+        <div style='margin-top:20px;text-align:center;'>
+          <a href='https://calendar.google.com/calendar/render?action=TEMPLATE&text=" . urlencode($serviceLabel . " — " . $appt['name']) . "&dates=" . str_replace('-', '', $appt['date']) . "T" . str_replace(':', '', $appt['time']) . "00/" . str_replace('-', '', $appt['date']) . "T" . sprintf('%02d', (int)substr($appt['time'], 0, 2) + 1) . substr($appt['time'], 2) . "00&details=" . urlencode("Cliente: " . $appt['name'] . "\nTeléfono: " . $appt['phone'] . "\nEmail: " . $appt['email'] . "\nServicio: " . $serviceLabel . "\nNotas: " . $appt['notes'] . "\nID: " . $appt['id']) . "&location=" . urlencode("8514 Preston Hwy, Louisville, KY 40219") . "&ctz=America/Kentucky/Louisville' target='_blank' style='display:inline-block;background:#C8A214;color:#fff;padding:14px 30px;border-radius:25px;text-decoration:none;font-weight:bold;font-size:16px;'>AGREGAR AL CALENDARIO</a>
+        </div>
       </div>
       <div style='background:#1B3356;padding:16px;text-align:center;'>
         <p style='color:#C5E8D5;margin:0;font-size:12px;'>8514 Preston Hwy, Louisville, KY 40219 | (502) 654-7076</p>
