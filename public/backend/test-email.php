@@ -20,7 +20,7 @@ $body = '<h2>Email de prueba</h2><p>Si ves esto, el correo funciona desde Hostin
 
 $emails = [
     'notaryaplus31@gmail.com',
-    'ferkmas88@gmail.com',
+    'notaryaplus3_1@yahoo.com',
 ];
 
 $results['from'] = $from;
