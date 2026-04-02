@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $DATA_FILE      = __DIR__ . '/appointments.json';
 $CONTACT_EMAIL  = 'notaryaplus31@gmail.com';
 $CONTACT_EMAIL2 = 'notaryaplus3_1@yahoo.com';
-$CONTACT_EMAIL3 = 'ferkmas88@gmail.com';
 
 $BUSINESS_HOURS = [
     1 => ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"],
