@@ -65,7 +65,14 @@ export default function CitasPage() {
     fetch(`/backend/citas.php?date=${date}`)
       .then((r) => r.json())
       .then((data) => {
-        setAvailableSlots(data.availableSlots || []);
+        let slots = data.availableSlots || [];
+        // Si es hoy, filtrar horas que ya pasaron
+        const today = new Date().toISOString().split("T")[0];
+        if (date === today) {
+          const nowHour = new Date().getHours();
+          slots = slots.filter((s: string) => parseInt(s.split(":")[0]) > nowHour);
+        }
+        setAvailableSlots(slots);
         setBookedSlots(data.bookedTimes || []);
       })
       .catch(() => {
