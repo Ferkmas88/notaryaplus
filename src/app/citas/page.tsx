@@ -13,7 +13,6 @@ function formatTime12h(time24: string): string {
 
 function getMinDate(): string {
   const d = new Date();
-  d.setDate(d.getDate() + 1);
   return d.toISOString().split("T")[0];
 }
 
