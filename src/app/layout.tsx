@@ -77,7 +77,7 @@ export default function RootLayout({
               "@id": "https://notaryaplus.com",
               url: "https://notaryaplus.com",
               telephone: "502-654-7076",
-              email: "notaryaplus3_1@yahoo.com",
+              email: "notaryaplus31@gmail.com",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "8514 Preston Hwy",

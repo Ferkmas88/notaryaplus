@@ -111,7 +111,7 @@ async function sendConfirmationEmail(appt: Appointment) {
     </div>
   `;
 
-  const contactEmail = process.env.CONTACT_EMAIL || "notaryaplus3_1@yahoo.com";
+  const contactEmail = process.env.CONTACT_EMAIL || "notaryaplus31@gmail.com";
 
   // Email a Myrna
   await transporter.sendMail({
@@ -141,7 +141,7 @@ async function sendConfirmationEmail(appt: Appointment) {
             <h3 style="color: #1B3356; margin-top: 0; font-size: 15px;">Información de la cita</h3>
             <p style="margin: 4px 0; font-size: 13px;"><strong>Dirección:</strong> 8514 Preston Hwy, Louisville, KY 40219</p>
             <p style="margin: 4px 0; font-size: 13px;"><strong>Teléfono:</strong> (502) 654-7076 / (502) 644-1312</p>
-            <p style="margin: 4px 0; font-size: 13px;"><strong>Email:</strong> notaryaplus3_1@yahoo.com</p>
+            <p style="margin: 4px 0; font-size: 13px;"><strong>Email:</strong> notaryaplus31@gmail.com</p>
           </div>
           <p style="margin-top: 16px; font-size: 13px; color: #666;">Si necesitas cancelar o reprogramar, comunícate con nosotros al menos con 24 horas de anticipación.</p>
         </div>

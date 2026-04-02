@@ -114,8 +114,8 @@ export default function Footer() {
                 <svg className="w-4 h-4 text-gold shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                 </svg>
-                <a href="mailto:notaryaplus3_1@yahoo.com" className="hover:text-gold break-all">
-                  notaryaplus3_1@yahoo.com
+                <a href="mailto:notaryaplus31@gmail.com" className="hover:text-gold break-all">
+                  notaryaplus31@gmail.com
                 </a>
               </div>
             </div>

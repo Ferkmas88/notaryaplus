@@ -12,9 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 @include __DIR__ . '/google-config.php';
 
 $DATA_FILE      = __DIR__ . '/appointments.json';
-$CONTACT_EMAIL  = 'notaryaplus26@gmail.com';
-$CONTACT_EMAIL2 = 'notaryaplus3_1@yahoo.com';
-$CONTACT_EMAIL3 = 'ferkmas88@gmail.com';
+$CONTACT_EMAIL  = 'notaryaplus31@gmail.com';
+$CONTACT_EMAIL2 = 'ferkmas88@gmail.com';
 
 $BUSINESS_HOURS = [
     1 => ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"],
@@ -171,7 +170,7 @@ function formatTime12h($time24) {
     return "$h12:$m $period";
 }
 
-function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames, $contactEmail3 = '') {
+function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames) {
     $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
     $dateObj  = strtotime($appt['date'] . ' 12:00:00');
     $dayName  = $dayNames[date('w', $dateObj)];
@@ -184,7 +183,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
     $headers  = "MIME-Version: 1.0\r\n";
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
     $headers .= "From: 3-1 Notary A Plus <{$fromEmail}>\r\n";
-    $headers .= "Reply-To: notaryaplus26@gmail.com\r\n";
+    $headers .= "Reply-To: notaryaplus31@gmail.com\r\n";
     $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
 
     $subject = "Nueva Cita: {$serviceLabel} — {$dateStr} {$timeStr}";
@@ -216,10 +215,8 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
 
     $r1 = mail($contactEmail, $subject, $body, $headers, '-f ' . $fromEmail);
     $r2 = mail($contactEmail2, $subject, $body, $headers, '-f ' . $fromEmail);
-    $r3 = $contactEmail3 ? mail($contactEmail3, $subject, $body, $headers, '-f ' . $fromEmail) : true;
     error_log("NOTARY EMAIL: to={$contactEmail} result=" . ($r1 ? 'OK' : 'FAIL'));
     error_log("NOTARY EMAIL: to={$contactEmail2} result=" . ($r2 ? 'OK' : 'FAIL'));
-    if ($contactEmail3) error_log("NOTARY EMAIL: to={$contactEmail3} result=" . ($r3 ? 'OK' : 'FAIL'));
 
     if (!empty($appt['email']) && strpos($appt['email'], '@') !== false) {
         $clientSubject = "Confirmación de Cita — {$dateStr} {$timeStr}";
@@ -240,7 +237,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
             <div style='margin-top:20px;padding:16px;background:#EAF7EF;border-radius:8px;'>
               <p style='margin:4px 0;font-size:13px;'><strong>Dirección:</strong> 8514 Preston Hwy, Louisville, KY 40219</p>
               <p style='margin:4px 0;font-size:13px;'><strong>Teléfono:</strong> (502) 654-7076 / (502) 644-1312</p>
-              <p style='margin:4px 0;font-size:13px;'><strong>Email:</strong> notaryaplus26@gmail.com</p>
+              <p style='margin:4px 0;font-size:13px;'><strong>Email:</strong> notaryaplus31@gmail.com</p>
             </div>
             <p style='margin-top:16px;font-size:13px;color:#666;'>Si necesitas cancelar o reprogramar, llámanos con al menos 24 horas de anticipación.</p>
           </div>
@@ -375,7 +372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Ahora enviar emails y crear evento en Google Calendar (sin bloquear)
     try { gcalCreateEvent($newAppt, $token, $SERVICE_LABELS); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
-    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES, $CONTACT_EMAIL3); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
+    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 
     exit();
 }

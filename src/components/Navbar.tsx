@@ -40,11 +40,11 @@ export default function Navbar() {
               </svg>
               (502) 644-1312
             </a>
-            <a href="mailto:notaryaplus26@gmail.com" className="flex items-center gap-1 hover:text-gold transition-colors">
+            <a href="mailto:notaryaplus31@gmail.com" className="flex items-center gap-1 hover:text-gold transition-colors">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
-              notaryaplus26@gmail.com
+              notaryaplus31@gmail.com
             </a>
           </div>
           <div className="flex items-center gap-3">
@@ -176,8 +176,8 @@ export default function Navbar() {
               <a href="tel:5026441312" className="block text-sm text-gray-300 hover:text-gold transition-colors">
                 (502) 644-1312
               </a>
-              <a href="mailto:notaryaplus26@gmail.com" className="block text-sm text-gray-300 hover:text-gold transition-colors">
-                notaryaplus26@gmail.com
+              <a href="mailto:notaryaplus31@gmail.com" className="block text-sm text-gray-300 hover:text-gold transition-colors">
+                notaryaplus31@gmail.com
               </a>
             </div>
           </div>

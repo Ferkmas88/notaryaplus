@@ -65,10 +65,10 @@ export default function ContactoPage() {
               </div>
               <h3 className="text-lg font-bold text-navy mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>{t("contacto.email.title", lang)}</h3>
               <a
-                href="mailto:notaryaplus3_1@yahoo.com"
+                href="mailto:notaryaplus31@gmail.com"
                 className="text-gray-700 hover:text-gold transition-colors font-medium break-all"
               >
-                notaryaplus3_1@yahoo.com
+                notaryaplus31@gmail.com
               </a>
               <p className="text-xs text-gray-500 mt-2">{t("contacto.email.response", lang)}</p>
             </div>
