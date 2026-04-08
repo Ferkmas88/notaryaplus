@@ -20,6 +20,7 @@ use PHPMailer\PHPMailer\Exception as PHPMailerException;
 $DATA_FILE      = __DIR__ . '/appointments.json';
 $CONTACT_EMAIL  = 'notaryaplus31@gmail.com';
 $CONTACT_EMAIL2 = 'notaryaplus3_1@yahoo.com';
+$CONTACT_EMAIL3 = 'cecilia1notaryaplus@gmail.com';
 
 // SMTP config
 $SMTP_HOST = 'smtp.hostinger.com';
@@ -199,7 +200,7 @@ function createMailer() {
     return $mail;
 }
 
-function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNames) {
+function sendEmails($appt, $contactEmail, $contactEmail2, $contactEmail3, $serviceLabels, $dayNames) {
     $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
     $dateObj  = strtotime($appt['date'] . ' 12:00:00');
     $dayName  = $dayNames[date('w', $dateObj)];
@@ -240,6 +241,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $serviceLabels, $dayNa
         $mail = createMailer();
         $mail->addAddress($contactEmail);
         $mail->addAddress($contactEmail2);
+        $mail->addAddress($contactEmail3);
         $mail->Subject = $subject;
         $mail->Body    = $body;
         $mail->send();
@@ -411,7 +413,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Ahora enviar emails y crear evento en Google Calendar (sin bloquear)
     try { gcalCreateEvent($newAppt, $token, $SERVICE_LABELS); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
-    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
+    try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $CONTACT_EMAIL3, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 
     exit();
 }

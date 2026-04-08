@@ -418,10 +418,11 @@ export default function CitasPage() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    {t("citas.email.label", lang)} <span className="text-gray-400 font-normal">{t("citas.email.optional", lang)}</span>
+                    {t("citas.email.label", lang)} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
+                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t("citas.email.placeholder", lang)}
