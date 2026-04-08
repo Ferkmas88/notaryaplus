@@ -267,18 +267,6 @@ export default function CitasPage() {
                 {t("citas.step2.title", lang)}
               </h2>
 
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {lang === "es" ? "Calendario de disponibilidad" : "Availability Calendar"}
-                </label>
-                <div className="rounded-xl overflow-hidden border-2 border-gray-200">
-                  <iframe
-                    src="https://calendar.google.com/calendar/embed?src=2025e3f6e24a55cee2d0d08205baa9d571bbe0a93aa72157115fef122af071a4%40group.calendar.google.com&ctz=America%2FKentucky%2FLouisville"
-                    className="w-full"
-                    style={{ border: 0, height: "400px" }}
-                  ></iframe>
-                </div>
-              </div>
 
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">{t("citas.date.label", lang)}</label>
