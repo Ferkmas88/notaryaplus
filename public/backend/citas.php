@@ -133,15 +133,8 @@ function gcalCreateEvent($appt, $token, $serviceLabels) {
     $endMin  = substr($appt['time'], 3, 2);
     $tz      = 'America/Kentucky/Louisville';
     $event   = [
-        'summary'     => "Cita: {$label} — {$appt['name']}",
-        'description' => implode("\n", [
-            "Cliente: {$appt['name']}",
-            "Teléfono: {$appt['phone']}",
-            "Email: {$appt['email']}",
-            "Servicio: {$label}",
-            "Notas: {$appt['notes']}",
-            "ID: {$appt['id']}",
-        ]),
+        'summary'     => "Cita Reservada — {$label}",
+        'description' => "ID: {$appt['id']}",
         'start' => ['dateTime' => $appt['date'] . 'T' . $appt['time'] . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
         'end'   => ['dateTime' => $appt['date'] . 'T' . $endHour . ':' . $endMin . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
         'reminders' => [
