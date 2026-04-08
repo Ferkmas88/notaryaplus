@@ -15,6 +15,7 @@ $results['method'] = 'SMTP (PHPMailer)';
 $emails = [
     'notaryaplus31@gmail.com',
     'notaryaplus3_1@yahoo.com',
+    'cecilia1notaryaplus@gmail.com',
 ];
 
 $results['emails'] = [];
