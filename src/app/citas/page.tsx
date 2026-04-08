@@ -273,7 +273,7 @@ export default function CitasPage() {
                 </label>
                 <div className="rounded-xl overflow-hidden border-2 border-gray-200">
                   <iframe
-                    src="https://calendar.google.com/calendar/embed?src=2025e3f6e24a55cee2d0d08205baa9d571bbe0a93aa72157115fef122af071a4%40group.calendar.google.com&ctz=America%2FKentucky%2FLouisville&color=%230B8043"
+                    src="https://calendar.google.com/calendar/embed?src=2025e3f6e24a55cee2d0d08205baa9d571bbe0a93aa72157115fef122af071a4%40group.calendar.google.com&ctz=America%2FKentucky%2FLouisville"
                     className="w-full"
                     style={{ border: 0, height: "400px" }}
                   ></iframe>
