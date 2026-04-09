@@ -72,15 +72,16 @@ function curlPost($url, $headers, $body) {
     return $res ?: null;
 }
 
-function gcalAccessToken() {
-    if (!defined('GOOGLE_REFRESH_TOKEN')) return null;
+function gcalAccessToken($refreshToken = null) {
+    $rt = $refreshToken ?: (defined('GOOGLE_REFRESH_TOKEN') ? GOOGLE_REFRESH_TOKEN : null);
+    if (!$rt) return null;
     $res = curlPost(
         'https://oauth2.googleapis.com/token',
         ['Content-Type: application/x-www-form-urlencoded'],
         http_build_query([
             'client_id'     => GOOGLE_CLIENT_ID,
             'client_secret' => GOOGLE_CLIENT_SECRET,
-            'refresh_token' => GOOGLE_REFRESH_TOKEN,
+            'refresh_token' => $rt,
             'grant_type'    => 'refresh_token',
         ])
     );
@@ -126,15 +127,20 @@ function gcalBusySlots($date, $token) {
     return $busySlots;
 }
 
-function gcalCreateEvent($appt, $token, $serviceLabels) {
+function gcalCreateEvent($appt, $token, $serviceLabels, $calendarId = null, $colorId = null) {
     if (!$token) return;
+    $calId   = $calendarId ?: (defined('GOOGLE_CALENDAR_ID') ? GOOGLE_CALENDAR_ID : null);
+    if (!$calId) return;
     $label   = $serviceLabels[$appt['service']] ?? $appt['service'];
     $endHour = sprintf('%02d', (int)substr($appt['time'], 0, 2) + 1);
     $endMin  = substr($appt['time'], 3, 2);
-    $tz      = 'America/Kentucky/Louisville';
+    $desc    = "ID: {$appt['id']}";
+    if (!empty($appt['createdBy'])) {
+        $desc .= "\nCreado por: {$appt['createdBy']}";
+    }
     $event   = [
         'summary'     => "Cita Reservada — {$label}",
-        'description' => "ID: {$appt['id']}",
+        'description' => $desc,
         'start' => ['dateTime' => $appt['date'] . 'T' . $appt['time'] . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
         'end'   => ['dateTime' => $appt['date'] . 'T' . $endHour . ':' . $endMin . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
         'reminders' => [
@@ -145,7 +151,10 @@ function gcalCreateEvent($appt, $token, $serviceLabels) {
             ],
         ],
     ];
-    $url = 'https://www.googleapis.com/calendar/v3/calendars/' . urlencode(GOOGLE_CALENDAR_ID) . '/events';
+    if ($colorId) {
+        $event['colorId'] = (string)$colorId;
+    }
+    $url = 'https://www.googleapis.com/calendar/v3/calendars/' . urlencode($calId) . '/events';
     curlPost($url, ['Content-Type: application/json', "Authorization: Bearer $token"], json_encode($event));
 }
 
@@ -217,6 +226,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $contactEmail3, $servi
           <tr><td style='padding:8px 0;color:#555;'><strong>Fecha:</strong></td><td style='padding:8px 0;font-weight:bold;'>{$dateStr}</td></tr>
           <tr><td style='padding:8px 0;color:#555;'><strong>Hora:</strong></td><td style='padding:8px 0;font-weight:bold;'>{$timeStr}</td></tr>
           " . ($appt['notes'] ? "<tr><td style='padding:8px 0;color:#555;vertical-align:top;'><strong>Notas:</strong></td><td style='padding:8px 0;'>{$appt['notes']}</td></tr>" : "") . "
+          " . (!empty($appt['createdBy']) ? "<tr><td style='padding:8px 0;color:#555;'><strong>Creado por:</strong></td><td style='padding:8px 0;'>{$appt['createdBy']}</td></tr>" : "") . "
         </table>
         <div style='margin-top:16px;padding:12px;background:#EAF7EF;border-left:4px solid #C8A214;border-radius:4px;'>
           <p style='margin:0;font-size:13px;color:#1B3356;'>ID de Cita: <strong>{$appt['id']}</strong></p>
@@ -318,13 +328,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
 
-    $name    = isset($input['name'])    ? trim($input['name'])    : '';
-    $phone   = isset($input['phone'])   ? trim($input['phone'])   : '';
-    $email   = isset($input['email'])   ? trim($input['email'])   : '';
-    $service = isset($input['service']) ? trim($input['service']) : '';
-    $date    = isset($input['date'])    ? trim($input['date'])    : '';
-    $time    = isset($input['time'])    ? trim($input['time'])    : '';
-    $notes   = isset($input['notes'])   ? trim($input['notes'])   : '';
+    $name              = isset($input['name'])              ? trim($input['name'])              : '';
+    $phone             = isset($input['phone'])             ? trim($input['phone'])             : '';
+    $email             = isset($input['email'])             ? trim($input['email'])             : '';
+    $service           = isset($input['service'])           ? trim($input['service'])           : '';
+    $date              = isset($input['date'])              ? trim($input['date'])              : '';
+    $time              = isset($input['time'])              ? trim($input['time'])              : '';
+    $notes             = isset($input['notes'])             ? trim($input['notes'])             : '';
+    $createdBy         = isset($input['createdBy'])         ? trim($input['createdBy'])         : '';
+    $adminCalendarId   = isset($input['adminCalendarId'])   ? trim($input['adminCalendarId'])   : '';
+    $adminRefreshToken = isset($input['adminRefreshToken']) ? trim($input['adminRefreshToken']) : '';
+    $adminColorId      = isset($input['adminColorId'])      ? trim($input['adminColorId'])      : '';
 
     if (!$name || !$phone || !$service || !$date || !$time) {
         http_response_code(400);
@@ -384,6 +398,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'notes'     => $notes,
         'createdAt' => date('c'),
     ];
+    if ($createdBy !== '') {
+        $newAppt['createdBy'] = $createdBy;
+    }
 
     $appointments[] = $newAppt;
     if (!writeAppointments($DATA_FILE, $appointments)) {
@@ -405,7 +422,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Ahora enviar emails y crear evento en Google Calendar (sin bloquear)
-    try { gcalCreateEvent($newAppt, $token, $SERVICE_LABELS); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
+    // If admin fields provided, use them; otherwise use defaults from google-config.php
+    $gcalToken   = ($adminRefreshToken !== '') ? gcalAccessToken($adminRefreshToken) : $token;
+    $gcalCalId   = ($adminCalendarId !== '') ? $adminCalendarId : null;
+    $gcalColorId = ($adminColorId !== '') ? $adminColorId : null;
+    try { gcalCreateEvent($newAppt, $gcalToken, $SERVICE_LABELS, $gcalCalId, $gcalColorId); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
     try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $CONTACT_EMAIL3, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 
     exit();

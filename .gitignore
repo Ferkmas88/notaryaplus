@@ -38,6 +38,9 @@ public/backend/google-config.php
 public/backend/auth.php
 public/backend/gcal-debug.php
 
+# Admin panel credentials (upload manually to Hostinger)
+public/backend/admin/admin-config.php
+
 # Archivos locales que no van al repo
 *.msi
 *.zip
