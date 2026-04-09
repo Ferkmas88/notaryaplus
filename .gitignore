@@ -44,3 +44,5 @@ public/backend/gcal-debug.php
 *.py
 .playwright-mcp/
 .claude/settings.local.json
+
+.vercel

@@ -125,6 +125,7 @@ export default function Footer() {
         <div className="border-t border-navy mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} 3-1 Notary A Plus. {t("footer.rights", lang)}</p>
           <p>{t("footer.agent", lang)}</p>
+          <p>Sitio web por <a href="https://www.digitalamwebsites.com" target="_blank" rel="noopener" className="hover:text-gold transition-colors">Digital AM</a> — Agencia de marketing digital en Louisville, KY</p>
         </div>
       </div>
     </footer>
