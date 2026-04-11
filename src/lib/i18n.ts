@@ -97,6 +97,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "home.cta.btn2": "Llamar: (502) 654-7076",
     "home.map.title": "Ubicación 3-1 Notary A Plus",
 
+    // Reviews section
+    "reviews.title": "Lo Que Dicen Nuestros Clientes",
+    "reviews.subtitle": "87 reseñas en Google · 4.2 estrellas",
+    "reviews.cta": "Dejar una Reseña en Google",
+    "reviews.viewall": "Ver todas las reseñas",
+
     // Taxes page
     "taxes.breadcrumb": "Inicio",
     "taxes.breadcrumb.current": "Taxes",
@@ -614,6 +620,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "home.cta.btn1": "Book Appointment Now",
     "home.cta.btn2": "Call: (502) 654-7076",
     "home.map.title": "3-1 Notary A Plus Location",
+
+    // Reviews section
+    "reviews.title": "What Our Clients Say",
+    "reviews.subtitle": "87 reviews on Google · 4.2 stars",
+    "reviews.cta": "Leave a Google Review",
+    "reviews.viewall": "See all reviews",
 
     // Taxes page
     "taxes.breadcrumb": "Home",
