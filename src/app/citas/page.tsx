@@ -22,7 +22,7 @@ export default function CitasPage() {
   const { lang } = useLang();
   const [step, setStep] = useState<Step>("service");
   const [service, setService] = useState("");
-  const [date, setDate] = useState(getMinDate());
+  const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
