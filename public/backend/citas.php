@@ -1,5 +1,5 @@
 <?php
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: https://notaryaplus.com');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json; charset=utf-8');
@@ -22,11 +22,11 @@ $CONTACT_EMAIL  = 'notaryaplus31@gmail.com';
 $CONTACT_EMAIL2 = 'notaryaplus3_1@yahoo.com';
 $CONTACT_EMAIL3 = 'cecilia1notaryaplus@gmail.com';
 
-// SMTP config
-$SMTP_HOST = 'smtp.hostinger.com';
-$SMTP_PORT = 465;
-$SMTP_USER = 'citas@notaryaplus.com';
-$SMTP_PASS = 'Hhb~at1LR^z3';
+// SMTP config — loaded from gitignored google-config.php
+$SMTP_HOST = defined('SMTP_HOST') ? SMTP_HOST : '';
+$SMTP_PORT = defined('SMTP_PORT') ? SMTP_PORT : 465;
+$SMTP_USER = defined('SMTP_USER') ? SMTP_USER : '';
+$SMTP_PASS = defined('SMTP_PASS') ? SMTP_PASS : '';
 
 $BUSINESS_HOURS = [
     1 => ["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"],

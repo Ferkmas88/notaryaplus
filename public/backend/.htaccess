@@ -1,1 +1,22 @@
 Options -Indexes
+
+# Block direct access to sensitive files
+<FilesMatch "\.(json|log|env|sh|bak|sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block debug and auth helper scripts
+<FilesMatch "^(auth|gcal-debug|debug)\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to config files
+<FilesMatch "^(google-config|admin-config)\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# No server signature
+ServerSignature Off

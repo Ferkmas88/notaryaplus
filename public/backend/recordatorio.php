@@ -13,6 +13,7 @@ if (!hash_equals(RECORDATORIO_SECRET, $token)) {
     exit();
 }
 
+@include __DIR__ . '/google-config.php';
 require_once __DIR__ . '/phpmailer/PHPMailer.php';
 require_once __DIR__ . '/phpmailer/SMTP.php';
 require_once __DIR__ . '/phpmailer/Exception.php';
@@ -21,10 +22,10 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 $DATA_FILE = __DIR__ . '/appointments.json';
-$SMTP_HOST = 'smtp.hostinger.com';
-$SMTP_PORT = 465;
-$SMTP_USER = 'citas@notaryaplus.com';
-$SMTP_PASS = 'Hhb~at1LR^z3';
+$SMTP_HOST = defined('SMTP_HOST') ? SMTP_HOST : '';
+$SMTP_PORT = defined('SMTP_PORT') ? SMTP_PORT : 465;
+$SMTP_USER = defined('SMTP_USER') ? SMTP_USER : '';
+$SMTP_PASS = defined('SMTP_PASS') ? SMTP_PASS : '';
 
 $SERVICE_LABELS = [
     'taxes_individual'  => 'Taxes Individuales',
