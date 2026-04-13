@@ -37,6 +37,8 @@ next-env.d.ts
 public/backend/google-config.php
 public/backend/auth.php
 public/backend/gcal-debug.php
+public/backend/service-account.json
+service-account.json
 
 # Admin panel credentials (upload manually to Hostinger)
 public/backend/admin/admin-config.php
