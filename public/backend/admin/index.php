@@ -1,6 +1,13 @@
 <?php
 session_start();
 
+// Security headers for the admin panel — deny iframe embedding so the login
+// cannot be wrapped in clickjacking overlays, disable referrer leaking, etc.
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: no-referrer');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+
 if (isset($_SESSION['admin_user'])) {
     header('Location: dashboard.php');
     exit();
@@ -8,22 +15,63 @@ if (isset($_SESSION['admin_user'])) {
 
 require_once __DIR__ . '/admin-config.php';
 
+// Brute-force protection: 5 failed attempts per 15 minutes per IP, then lock.
+// Uses the same JSON store as citas.php. Keeps the state file in the parent
+// backend dir so both rate limiters share the same .htaccess protection.
+function adminRateLimitCheck(): array {
+    $ip = $_SERVER['HTTP_CF_CONNECTING_IP']
+        ?? $_SERVER['HTTP_X_FORWARDED_FOR']
+        ?? $_SERVER['REMOTE_ADDR']
+        ?? 'unknown';
+    if (str_contains($ip, ',')) $ip = trim(explode(',', $ip)[0]);
+    $file = __DIR__ . '/../.ratelimit.json';
+    $data = [];
+    if (file_exists($file)) {
+        $raw  = @file_get_contents($file);
+        $data = json_decode($raw, true) ?: [];
+    }
+    $key    = 'admin_fail|' . $ip;
+    $now    = time();
+    $cutoff = $now - 900; // 15 min window
+    $hits   = array_filter($data[$key] ?? [], fn($t) => $t >= $cutoff);
+    return [$ip, $data, $file, $key, array_values($hits)];
+}
+
+function adminRateLimitRecordFailure(string $ip, array $data, string $file, string $key, array $hits): void {
+    $hits[]     = time();
+    $data[$key] = $hits;
+    @file_put_contents($file, json_encode($data), LOCK_EX);
+}
+
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+    [$ip, $rlData, $rlFile, $rlKey, $rlHits] = adminRateLimitCheck();
 
-    if (isset($ADMINS[$username]) && password_verify($password, $ADMINS[$username]['password_hash'])) {
-        $_SESSION['admin_user']     = $username;
-        $_SESSION['admin_name']     = $ADMINS[$username]['name'];
-        $_SESSION['admin_cal_id']   = $ADMINS[$username]['calendar_id'];
-        $_SESSION['admin_color']    = $ADMINS[$username]['event_color'];
-        $_SESSION['admin_rt']       = $ADMINS[$username]['refresh_token'];
-        header('Location: dashboard.php');
-        exit();
+    if (count($rlHits) >= 5) {
+        http_response_code(429);
+        $error = 'Demasiados intentos fallidos. Intenta en 15 minutos.';
     } else {
-        $error = 'Usuario o contraseña incorrectos';
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if (isset($ADMINS[$username]) && password_verify($password, $ADMINS[$username]['password_hash'])) {
+            // Rotate session id on privilege change to prevent session fixation.
+            session_regenerate_id(true);
+            $_SESSION['admin_user']     = $username;
+            $_SESSION['admin_name']     = $ADMINS[$username]['name'];
+            $_SESSION['admin_cal_id']   = $ADMINS[$username]['calendar_id'];
+            $_SESSION['admin_color']    = $ADMINS[$username]['event_color'];
+            // admin_rt kept for backwards-compat with older sessions — no
+            // longer used by citas.php (Service Account handles auth).
+            $_SESSION['admin_rt']       = $ADMINS[$username]['refresh_token'] ?? '';
+            header('Location: dashboard.php');
+            exit();
+        } else {
+            adminRateLimitRecordFailure($ip, $rlData, $rlFile, $rlKey, $rlHits);
+            // Generic error so we don't reveal whether the username exists.
+            $error = 'Usuario o contraseña incorrectos';
+        }
     }
 }
 ?>

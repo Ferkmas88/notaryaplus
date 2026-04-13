@@ -264,11 +264,34 @@ function createMailer() {
 }
 
 function sendEmails($appt, $contactEmail, $contactEmail2, $contactEmail3, $serviceLabels, $dayNames) {
-    $serviceLabel = $serviceLabels[$appt['service']] ?? $appt['service'];
-    $dateObj  = strtotime($appt['date'] . ' 12:00:00');
+    // Keep the raw email for PHPMailer->addAddress() which needs the
+    // real RFC email string, not an HTML-escaped version.
+    $rawClientEmail = $appt['email'] ?? '';
+
+    // HTML-escape every user-controlled field before interpolating into
+    // the email bodies. Without this, a name like '<script>' or notes
+    // containing arbitrary tags would land raw in Myrna's inbox and
+    // could manipulate the email rendering or embed malicious markup.
+    $apptSafe = [
+        'id'        => htmlspecialchars($appt['id']       ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        'name'      => htmlspecialchars($appt['name']     ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        'phone'     => htmlspecialchars($appt['phone']    ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        'email'     => htmlspecialchars($rawClientEmail,          ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        'notes'     => htmlspecialchars($appt['notes']    ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        'createdBy' => htmlspecialchars($appt['createdBy'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+        'service'   => $appt['service'] ?? '',
+        'date'      => $appt['date']    ?? '',
+        'time'      => $appt['time']    ?? '',
+    ];
+
+    $serviceLabel = $serviceLabels[$apptSafe['service']] ?? $apptSafe['service'];
+    $dateObj  = strtotime($apptSafe['date'] . ' 12:00:00');
     $dayName  = $dayNames[date('w', $dateObj)];
     $dateStr  = $dayName . ', ' . date('F j, Y', $dateObj);
-    $timeStr  = formatTime12h($appt['time']);
+    $timeStr  = formatTime12h($apptSafe['time']);
+
+    // From here on, use $apptSafe in all HTML interpolations.
+    $appt = $apptSafe;
 
     $subject = "Nueva Cita: {$serviceLabel} — {$dateStr} {$timeStr}";
     $body = "
@@ -313,7 +336,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $contactEmail3, $servi
         error_log("NOTARY SMTP ERROR (negocio): " . $e->getMessage());
     }
 
-    if (!empty($appt['email']) && strpos($appt['email'], '@') !== false) {
+    if (!empty($rawClientEmail) && filter_var($rawClientEmail, FILTER_VALIDATE_EMAIL)) {
         $clientSubject = "Confirmación de Cita — {$dateStr} {$timeStr}";
         $clientBody = "
         <div style='font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#1a1a2e;'>
@@ -346,7 +369,7 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $contactEmail3, $servi
 
         try {
             $mail2 = createMailer();
-            $mail2->addAddress($appt['email']);
+            $mail2->addAddress($rawClientEmail);
             $mail2->Subject = $clientSubject;
             $mail2->Body    = $clientBody;
             $mail2->send();
@@ -380,25 +403,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit();
 }
 
+// ─── Rate limiting (simple file-based sliding window per IP) ────────────────
+// Protects the POST endpoint from floods that would spam Myrna's inbox,
+// the Google Calendar, and the Hostinger SMTP quota. 10 appointment
+// attempts per 10 minutes per IP is generous for real users and blocks
+// scripted abuse. File is a single JSON blob; fine for low traffic.
+function rateLimitCheck($action, $limit, $windowSecs) {
+    $ip = $_SERVER['HTTP_CF_CONNECTING_IP']
+        ?? $_SERVER['HTTP_X_FORWARDED_FOR']
+        ?? $_SERVER['REMOTE_ADDR']
+        ?? 'unknown';
+    if (str_contains($ip, ',')) $ip = trim(explode(',', $ip)[0]);
+    $file = __DIR__ . '/.ratelimit.json';
+    $data = [];
+    if (file_exists($file)) {
+        $raw  = @file_get_contents($file);
+        $data = json_decode($raw, true) ?: [];
+    }
+    $now    = time();
+    $cutoff = $now - $windowSecs;
+    $key    = $action . '|' . $ip;
+    $hits   = array_filter($data[$key] ?? [], fn($t) => $t >= $cutoff);
+    if (count($hits) >= $limit) {
+        return false;
+    }
+    $hits[]      = $now;
+    $data[$key]  = array_values($hits);
+    // Trim old keys occasionally so the file does not grow forever
+    if (count($data) > 500) {
+        $data = array_slice($data, -200, null, true);
+    }
+    @file_put_contents($file, json_encode($data), LOCK_EX);
+    return true;
+}
+
 // ─── POST: crear cita ─────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
+    // Rate limit: 10 attempts per 10 minutes per IP.
+    if (!rateLimitCheck('post_cita', 10, 600)) {
+        http_response_code(429);
+        echo json_encode(['error' => 'Demasiadas solicitudes. Por favor intenta en unos minutos.']);
+        exit();
+    }
 
-    $name              = isset($input['name'])              ? trim($input['name'])              : '';
-    $phone             = isset($input['phone'])             ? trim($input['phone'])             : '';
-    $email             = isset($input['email'])             ? trim($input['email'])             : '';
-    $service           = isset($input['service'])           ? trim($input['service'])           : '';
-    $date              = isset($input['date'])              ? trim($input['date'])              : '';
-    $time              = isset($input['time'])              ? trim($input['time'])              : '';
-    $notes             = isset($input['notes'])             ? trim($input['notes'])             : '';
-    $createdBy         = isset($input['createdBy'])         ? trim($input['createdBy'])         : '';
-    $adminCalendarId   = isset($input['adminCalendarId'])   ? trim($input['adminCalendarId'])   : '';
-    $adminRefreshToken = isset($input['adminRefreshToken']) ? trim($input['adminRefreshToken']) : '';
-    $adminColorId      = isset($input['adminColorId'])      ? trim($input['adminColorId'])      : '';
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Datos inválidos.']);
+        exit();
+    }
+
+    // Strict input sanitation + length caps.
+    $clip = fn($v, $max) => mb_substr(trim((string)$v), 0, $max);
+    $name              = $clip($input['name']            ?? '', 120);
+    $phone             = $clip($input['phone']           ?? '', 30);
+    $email             = $clip($input['email']           ?? '', 150);
+    $service           = $clip($input['service']         ?? '', 40);
+    $date              = $clip($input['date']            ?? '', 10);
+    $time              = $clip($input['time']            ?? '', 5);
+    $notes             = $clip($input['notes']           ?? '', 500);
+    $createdBy         = $clip($input['createdBy']       ?? '', 80);
+    $adminCalendarId   = $clip($input['adminCalendarId'] ?? '', 120);
+    $adminColorId      = $clip($input['adminColorId']    ?? '', 3);
 
     if (!$name || !$phone || !$service || !$date || !$time) {
         http_response_code(400);
         echo json_encode(['error' => 'Faltan campos requeridos.']);
+        exit();
+    }
+
+    // Whitelist the service so it can safely be used as an $SERVICE_LABELS key
+    // and interpolated into emails without risk of injecting unexpected content.
+    if (!array_key_exists($service, $SERVICE_LABELS)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Servicio inválido.']);
+        exit();
+    }
+
+    // Basic email shape check (only if provided — email is optional in the form).
+    if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Email inválido.']);
         exit();
     }
 
@@ -417,7 +502,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    if (!in_array($time, $allowedSlots)) {
+    if (!in_array($time, $allowedSlots, true)) {
         http_response_code(400);
         echo json_encode(['error' => 'Hora fuera del horario de atención.']);
         exit();
@@ -428,7 +513,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // from stale local entries that are no longer in the actual calendar.
     $token    = gcalAccessToken();
     $gcalBusy = gcalBusySlots($date, $token);
-    if (in_array($time, $gcalBusy)) {
+    if (in_array($time, $gcalBusy, true)) {
         http_response_code(409);
         echo json_encode(['error' => 'Ese horario ya está ocupado. Por favor selecciona otra hora.']);
         exit();
@@ -472,11 +557,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flush();
     }
 
-    // Ahora enviar emails y crear evento en Google Calendar (sin bloquear)
-    // If admin fields provided, use them; otherwise use defaults from google-config.php
-    $gcalToken   = ($adminRefreshToken !== '') ? gcalAccessToken($adminRefreshToken) : $token;
+    // Ahora enviar emails y crear evento en Google Calendar (sin bloquear).
+    // Service Account covers every calendar — the legacy adminRefreshToken
+    // parameter was removed from the input sanitation above because it is
+    // no longer consulted. adminCalendarId and adminColorId are still used
+    // by the admin panel flow to write to the per-admin calendar.
+    $gcalToken   = $token;
     $gcalCalId   = ($adminCalendarId !== '') ? $adminCalendarId : null;
-    $gcalColorId = ($adminColorId !== '') ? $adminColorId : null;
+    $gcalColorId = ($adminColorId    !== '') ? $adminColorId    : null;
     try { gcalCreateEvent($newAppt, $gcalToken, $SERVICE_LABELS, $gcalCalId, $gcalColorId); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
     try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $CONTACT_EMAIL3, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 

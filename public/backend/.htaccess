@@ -6,6 +6,12 @@ Options -Indexes
     Deny from all
 </FilesMatch>
 
+# Block the rate limiting state file and any dotfile we might write.
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
 # Block debug and auth helper scripts
 <FilesMatch "^(auth|gcal-debug|debug)\.php$">
     Order allow,deny
