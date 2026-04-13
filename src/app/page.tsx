@@ -95,25 +95,71 @@ export default function Home() {
             <circle cx="100" cy="500" r="200" fill="#C5E8D5" />
           </svg>
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 py-24 md:py-32">
+        <div className="relative max-w-7xl mx-auto px-4 pt-5 pb-20 md:pt-9 md:pb-28">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 rounded-full px-4 py-1.5 mb-6">
+            <div className="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 rounded-full px-4 py-1.5 mb-5">
               <span className="w-2 h-2 bg-gold rounded-full animate-pulse"></span>
               <span className="text-gold text-sm font-medium">{t("home.badge", lang)}</span>
             </div>
             <h1
-              className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight"
+              className="text-4xl md:text-6xl font-bold text-white mb-3 leading-tight"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               {t("home.hero.title", lang)}
-              <span className="block text-gold mt-2">{t("home.hero.subtitle", lang)}</span>
+              <span className="block text-gold mt-1">{t("home.hero.subtitle", lang)}</span>
             </h1>
+            {/* Owner signature line */}
+            <div className="flex items-center gap-4 mb-6">
+              <span className="h-px w-10 bg-gold/60"></span>
+              <p
+                className="text-lg md:text-xl text-gray-200 font-light italic"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                {t("home.hero.owner", lang)}{" "}
+                <span className="not-italic font-semibold text-white tracking-wide">
+                  Myrna Rodríguez
+                </span>
+              </p>
+            </div>
             <p className="text-xl text-gray-300 mb-4 leading-relaxed">
               <span className="text-gold font-semibold">{t("home.hero.years", lang)}</span>{t("home.hero.desc", lang)}
             </p>
-            <p className="text-gray-400 mb-10">
+            <p className="text-gray-400 mb-8 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gold shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
               {t("home.hero.address", lang)}
             </p>
+            {/* Phone number buttons — compact, elegant, clickable */}
+            <div className="mb-8">
+              <p className="text-gold/90 text-xs uppercase tracking-[0.2em] font-semibold mb-3">
+                {t("home.hero.callus", lang)}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="tel:5026547076"
+                  className="group inline-flex items-center gap-2.5 bg-white/5 hover:bg-gold border border-white/15 hover:border-gold rounded-full px-5 py-2.5 backdrop-blur-sm transition-all duration-200"
+                >
+                  <svg className="w-4 h-4 text-gold group-hover:text-navy transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.47 11.47 0 00.57 3.58 1 1 0 01-.25 1.02l-2.2 2.19z"/>
+                  </svg>
+                  <span className="text-white group-hover:text-navy font-semibold text-base tracking-wide transition-colors">
+                    (502) 654-7076
+                  </span>
+                </a>
+                <a
+                  href="tel:5026441312"
+                  className="group inline-flex items-center gap-2.5 bg-white/5 hover:bg-gold border border-white/15 hover:border-gold rounded-full px-5 py-2.5 backdrop-blur-sm transition-all duration-200"
+                >
+                  <svg className="w-4 h-4 text-gold group-hover:text-navy transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.47 11.47 0 00.57 3.58 1 1 0 01-.25 1.02l-2.2 2.19z"/>
+                  </svg>
+                  <span className="text-white group-hover:text-navy font-semibold text-base tracking-wide transition-colors">
+                    (502) 644-1312
+                  </span>
+                </a>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-4">
               <Link href="/citas" className="btn-gold text-base">
                 {t("home.hero.cta1", lang)}
@@ -134,18 +180,19 @@ export default function Home() {
       </section>
 
       {/* Stats */}
-      <section className="bg-white py-12">
+      <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((s) => (
-              <div key={s.label} className="text-center">
+              <div key={s.label} className="text-center group">
                 <div
-                  className="text-4xl font-bold text-gold mb-1"
+                  className="text-5xl md:text-7xl font-bold text-gold mb-2 leading-none group-hover:scale-105 transition-transform duration-300"
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
                   {s.value}
                 </div>
-                <div className="text-sm text-gray-600 font-medium">{s.label}</div>
+                <div className="w-10 h-0.5 bg-gold/40 mx-auto mb-3"></div>
+                <div className="text-sm md:text-base text-gray-600 font-medium uppercase tracking-wide">{s.label}</div>
               </div>
             ))}
           </div>
