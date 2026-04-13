@@ -1,40 +1,34 @@
 <?php
+// One-shot cleanup endpoint — empties appointments.json.
+// Token-protected. Only needed because the file held stale entries from
+// before Google Calendar became the single source of truth for availability.
+// Safe to run: the file is only a log for emails/reminders now; real new
+// bookings will repopulate it normally.
+
 header('Content-Type: application/json; charset=utf-8');
+
+$token = $_GET['t'] ?? '';
+if ($token !== 'clean-2026-04-13-notary') {
+    http_response_code(403);
+    echo json_encode(['error' => 'forbidden']);
+    exit();
+}
 
 $DATA_FILE = __DIR__ . '/appointments.json';
 
 if (!file_exists($DATA_FILE)) {
-    echo json_encode(['error' => 'No existe el archivo']);
+    echo json_encode(['success' => true, 'note' => 'file did not exist, nothing to clean']);
     exit();
 }
 
-$raw = file_get_contents($DATA_FILE);
-$appointments = json_decode($raw, true);
+$raw  = file_get_contents($DATA_FILE);
+$data = json_decode($raw, true);
+$before = is_array($data) ? count($data) : -1;
 
-if (!is_array($appointments)) {
-    echo json_encode(['error' => 'Archivo corrupto']);
-    exit();
-}
-
-$total = count($appointments);
-
-// Eliminar: todas las del 15, y la del 16 a las 12:00
-$filtered = array_filter($appointments, function($a) {
-    // Eliminar todas las citas del 15 de abril 2026
-    if ($a['date'] === '2026-04-15') return false;
-    // Eliminar la cita del 16 de abril 2026 a las 12:00
-    if ($a['date'] === '2026-04-16' && $a['time'] === '12:00') return false;
-    return true;
-});
-
-$filtered = array_values($filtered);
-$removed = $total - count($filtered);
-
-file_put_contents($DATA_FILE, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
+$ok = file_put_contents($DATA_FILE, "[]", LOCK_EX);
 
 echo json_encode([
-    'success' => true,
-    'total_before' => $total,
-    'removed' => $removed,
-    'total_after' => count($filtered),
+    'success'      => $ok !== false,
+    'entries_before' => $before,
+    'entries_after'  => 0,
 ], JSON_PRETTY_PRINT);
