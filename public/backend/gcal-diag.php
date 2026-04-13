@@ -13,7 +13,7 @@ if ($token !== 'diag-2026-04-13-notary') {
 
 @include __DIR__ . '/google-config.php';
 require_once __DIR__ . '/gcal-auth.php';
-require_once __DIR__ . '/citas.php'; // to reuse curlPost (header() calls already sent above are fine)
+// Note: NOT requiring citas.php — it would execute its own GET handler.
 
 $out = [];
 
