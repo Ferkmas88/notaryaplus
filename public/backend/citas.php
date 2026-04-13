@@ -325,17 +325,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $dayOfWeek      = (int)date('w', strtotime($date . ' 12:00:00'));
     $availableSlots = $BUSINESS_HOURS[$dayOfWeek] ?? [];
 
-    // Citas guardadas localmente
-    $appointments = readAppointments($DATA_FILE);
-    $bookedTimes  = [];
-    foreach ($appointments as $a) {
-        if ($a['date'] === $date) $bookedTimes[] = $a['time'];
-    }
-
-    // Citas de Google Calendar
+    // Google Calendar is the single source of truth for slot availability.
+    // appointments.json is kept as a log (for emails / reminders / admin
+    // dashboard) but is NEVER consulted here — otherwise stale entries
+    // would block real slots even after Myrna cancels in the calendar.
     $token      = gcalAccessToken();
-    $gcalBusy   = gcalBusySlots($date, $token);
-    $bookedTimes = array_unique(array_merge($bookedTimes, $gcalBusy));
+    $bookedTimes = gcalBusySlots($date, $token);
 
     echo json_encode(['availableSlots' => $availableSlots, 'bookedTimes' => array_values($bookedTimes)]);
     exit();
@@ -384,24 +379,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    $appointments = readAppointments($DATA_FILE);
-
-    foreach ($appointments as $a) {
-        if ($a['date'] === $date && $a['time'] === $time) {
-            http_response_code(409);
-            echo json_encode(['error' => 'Ese horario ya está ocupado. Por favor selecciona otra hora.']);
-            exit();
-        }
-    }
-
-    // Verificar también en Google Calendar
-    $token = gcalAccessToken();
+    // Google Calendar is the single source of truth for conflict detection.
+    // We do NOT check appointments.json here — it would create false conflicts
+    // from stale local entries that are no longer in the actual calendar.
+    $token    = gcalAccessToken();
     $gcalBusy = gcalBusySlots($date, $token);
     if (in_array($time, $gcalBusy)) {
         http_response_code(409);
-        echo json_encode(['error' => 'Ese horario ya está ocupado en el calendario. Por favor selecciona otra hora.']);
+        echo json_encode(['error' => 'Ese horario ya está ocupado. Por favor selecciona otra hora.']);
         exit();
     }
+
+    // Load the local log so we can append the new entry below (NOT for conflict checks).
+    $appointments = readAppointments($DATA_FILE);
 
     $id = 'CIT-' . time() . rand(100, 999);
     $newAppt = [
