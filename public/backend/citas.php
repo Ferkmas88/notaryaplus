@@ -73,11 +73,36 @@ function curlPost($url, $headers, $body) {
     return $res ?: null;
 }
 
-function gcalAccessToken($unused = null) {
-    // Service Account replaces the old OAuth refresh-token flow.
-    // The $unused parameter is kept so existing call sites that still pass
-    // an admin refresh token don't break — the argument is silently ignored.
-    return gcalServiceAccountToken('https://www.googleapis.com/auth/calendar.events');
+function gcalAccessTokenOAuth($refreshToken = null) {
+    // Legacy OAuth fallback — used only if the Service Account JSON is not
+    // present on the server yet. Expires every 7 days in Testing mode, which
+    // is exactly the bug we want to eliminate. Kept temporarily so the site
+    // does not break during the transition window before service-account.json
+    // is uploaded to Hostinger.
+    $rt = $refreshToken ?: (defined('GOOGLE_REFRESH_TOKEN') ? GOOGLE_REFRESH_TOKEN : null);
+    if (!$rt || !defined('GOOGLE_CLIENT_ID') || !defined('GOOGLE_CLIENT_SECRET')) return null;
+    $res = curlPost(
+        'https://oauth2.googleapis.com/token',
+        ['Content-Type: application/x-www-form-urlencoded'],
+        http_build_query([
+            'client_id'     => GOOGLE_CLIENT_ID,
+            'client_secret' => GOOGLE_CLIENT_SECRET,
+            'refresh_token' => $rt,
+            'grant_type'    => 'refresh_token',
+        ])
+    );
+    if (!$res) return null;
+    $data = json_decode($res, true);
+    return $data['access_token'] ?? null;
+}
+
+function gcalAccessToken($legacyRefreshToken = null) {
+    // Prefer Service Account (never expires). Fall back to legacy OAuth
+    // only if service-account.json is not yet deployed. This guarantees the
+    // site keeps working during the transition window.
+    $token = gcalServiceAccountToken('https://www.googleapis.com/auth/calendar.events');
+    if ($token) return $token;
+    return gcalAccessTokenOAuth($legacyRefreshToken);
 }
 
 function gcalBusySlots($date, $token) {
