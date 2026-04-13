@@ -11,5 +11,5 @@ define('SMTP_PASS', '');                // Tu contraseña del email de Hostinger
 define('SMTP_FROM_NAME', '3-1 Notary A Plus');
 
 // Emails donde llegan las notificaciones de citas
-define('CONTACT_EMAIL',  'notaryaplus26@gmail.com');
+define('CONTACT_EMAIL',  'notaryaplus31@gmail.com');
 define('CONTACT_EMAIL2', 'notaryaplus3_1@yahoo.com');

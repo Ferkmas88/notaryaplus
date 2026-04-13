@@ -34,27 +34,27 @@ Estos archivos tienen credenciales y están en `.gitignore`:
 
 ## Google Calendar Integration
 
-- **Cuenta:** `notaryaplus26@gmail.com`
-- **Google Cloud proyecto:** `vmjoyeria`
-- **Client ID:** `804772779096-3d9hlcllb1s3tsodkhf84nef1285u5co.apps.googleusercontent.com`
-- **Archivo config:** `public/backend/google-config.php` (gitignored)
+- **Cuenta:** `notaryaplus31@gmail.com`
+- **Google Cloud proyecto:** `notaryaplus-backend`
+- **Método de auth:** Service Account (JWT firmado localmente, no expira)
+- **Archivo credenciales:** `service-account.json` (gitignored, subir manual a Hostinger
+  en `/home/<usuario>/` o en `public_html/backend/` — el `.htaccess` bloquea `.json` ahí)
+- **Helper PHP:** `public/backend/gcal-auth.php` → `gcalServiceAccountToken($scope)`
+- **Scopes usados:** `https://www.googleapis.com/auth/calendar.events`
 
-### ⚠️ PROBLEMA CONOCIDO — Token expira cada 7 días
+### Cómo está cableado
 
-La app OAuth está en modo **Testing**. Solución pendiente el lunes:
+- `citas.php` → `gcalAccessToken()` delega a `gcalServiceAccountToken()` → no usa refresh tokens.
+- El panel admin sigue pasando `adminRefreshToken` en el request pero se ignora silenciosamente.
+- `google-config.php` ya no necesita `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REFRESH_TOKEN`.
+  Solo mantiene `GOOGLE_CALENDAR_ID` + credenciales SMTP.
 
-**Fix rápido:** Google Cloud Console → OAuth consent screen → **Publish App**
-Después regenerar refresh token con `auth.php` y subir `google-config.php` nuevo.
+### Rotar la credencial del Service Account (solo si se filtra)
 
-**Fix permanente:** Migrar a Service Account (no expira nunca).
-
-### Regenerar refresh token cuando expira:
-1. Subir `public/backend/auth.php` a Hostinger (tiene placeholders, editar con credenciales)
-2. Abrir `https://notaryaplus.com/backend/auth.php` con `notaryaplus26@gmail.com`
-3. Copiar REFRESH TOKEN
-4. Actualizar `public/backend/google-config.php` con el nuevo token
-5. Subir `google-config.php` a Hostinger
-6. **Borrar** `auth.php` del servidor
+1. Google Cloud Console → IAM & Admin → Service Accounts → el service account → Keys.
+2. Revoke la key vieja.
+3. Add Key → Create new key → JSON → descargar.
+4. Subir el nuevo `service-account.json` a Hostinger reemplazando el viejo.
 
 ---
 
@@ -64,7 +64,7 @@ URL: `https://notaryaplus.com/backend/admin/`
 
 | Usuario | Password | Calendario |
 |---------|----------|-----------|
-| `myrna` | `Myrna2025!` | `notaryaplus26@gmail.com` |
+| `myrna` | `Myrna2025!` | `notaryaplus31@gmail.com` |
 | `cecilia` | `Cecilia2025!` | `cecilia1notaryaplus@gmail.com` (pendiente OAuth) |
 
 ---
@@ -80,7 +80,7 @@ Cron job en Hostinger hPanel → Cron Jobs:
 
 ## Emails
 
-- Myrna: `notaryaplus3_1@yahoo.com` + `notaryaplus26@gmail.com`
+- Myrna: `notaryaplus3_1@yahoo.com` + `notaryaplus31@gmail.com`
 - SMTP: `smtp.hostinger.com:465` (credenciales en `citas.php`)
 
 ---
@@ -104,8 +104,7 @@ Secrets en GitHub: `FTP_USERNAME`, `FTP_PASSWORD`
 
 ## Pendientes
 
-- [ ] Publicar OAuth app (Testing → Production) para que el token no expire
-- [ ] Regenerar refresh token después de publicar
-- [ ] Conectar Google Calendar de Cecilia (necesita su refresh token)
+- [ ] Conectar Google Calendar de Cecilia (compartir su calendario con el mismo Service Account — cero código)
 - [ ] Configurar cron job de recordatorios en Hostinger
 - [ ] Subir `admin-config.php` a Hostinger si no está
+- [ ] Reactivar booking online en `src/app/citas/page.tsx` (actualmente deshabilitado)
