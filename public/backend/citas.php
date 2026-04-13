@@ -12,12 +12,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 @include __DIR__ . '/google-config.php';
 require_once __DIR__ . '/gcal-auth.php';
 
-// Single source of truth for which Google Calendar the public site reads.
-// google-config.php historically pointed to a secondary group calendar
-// that held only a fraction of Myrna's real appointments. She creates
-// every real booking in her primary Gmail calendar below, so we read/write
-// there. If you ever need to switch calendars, change ONLY this line.
+// Calendar Myrna herself uses — this is where NEW web bookings get created.
 const NOTARY_CALENDAR_ID = 'notaryaplus31@gmail.com';
+
+// All calendars the public slot check reads (Myrna + her secretaries).
+// Any of these with an event in a given slot blocks that slot on the web.
+// Each calendar must be shared with the Service Account
+// (notaryaplus-calendar@notaryaplus-backend.iam.gserviceaccount.com) with
+// at least "See all event details". To add a new secretary calendar,
+// append its ID here and share it.
+const NOTARY_READ_CALENDAR_IDS = [
+    'notaryaplus31@gmail.com',                                                                     // Myrna (primary)
+    '2025e3f6e24a55cee2d0d08205baa9d571bbe0a93aa72157115fef122af071a4@group.calendar.google.com', // legacy group calendar still in use
+    // TODO secretaries: add one ID per line as they are confirmed and shared.
+    // 'secretary-one@gmail.com',
+    // 'secretary-two@gmail.com',
+];
 require_once __DIR__ . '/phpmailer/PHPMailer.php';
 require_once __DIR__ . '/phpmailer/SMTP.php';
 require_once __DIR__ . '/phpmailer/Exception.php';
@@ -116,7 +126,14 @@ function gcalAccessToken($legacyRefreshToken = null) {
 
 function gcalBusySlots($date, $token) {
     if (!$token) return [];
-    $calId  = NOTARY_CALENDAR_ID;
+
+    // Union of busy periods across every calendar we read (Myrna + secretaries).
+    // A single freeBusy.query can list up to 50 calendars at once — cheap.
+    $items = [];
+    foreach (NOTARY_READ_CALENDAR_IDS as $cid) {
+        $items[] = ['id' => $cid];
+    }
+
     $tz     = new DateTimeZone('America/Kentucky/Louisville');
     $dtMin  = new DateTime($date . ' 00:00:00', $tz);
     $dtMax  = new DateTime($date . ' 23:59:59', $tz);
@@ -124,7 +141,7 @@ function gcalBusySlots($date, $token) {
         'timeMin'  => $dtMin->format(DateTime::RFC3339),
         'timeMax'  => $dtMax->format(DateTime::RFC3339),
         'timeZone' => 'America/Kentucky/Louisville',
-        'items'    => [['id' => $calId]],
+        'items'    => $items,
     ]);
     $res = curlPost(
         'https://www.googleapis.com/calendar/v3/freeBusy',
@@ -133,23 +150,38 @@ function gcalBusySlots($date, $token) {
     );
     if (!$res) return [];
     $data = json_decode($res, true);
-    $busy = $data['calendars'][$calId]['busy'] ?? [];
+
+    // Collect busy periods from every calendar that responded without error.
+    // A calendar with an error (not shared with SA, wrong ID, etc.) is logged
+    // and skipped so one misconfigured entry does not nuke the whole check.
+    $periods = [];
+    foreach (NOTARY_READ_CALENDAR_IDS as $cid) {
+        $calResp = $data['calendars'][$cid] ?? null;
+        if (!$calResp) continue;
+        if (!empty($calResp['errors'])) {
+            error_log('[freeBusy] ' . $cid . ' error: ' . json_encode($calResp['errors']));
+            continue;
+        }
+        foreach ($calResp['busy'] ?? [] as $p) {
+            $periods[] = $p;
+        }
+    }
 
     $busySlots = [];
     $localTz   = new DateTimeZone('America/Kentucky/Louisville');
-    foreach ($busy as $period) {
-        $start = strtotime($period['start']); // UTC timestamp
-        $end   = strtotime($period['end']);   // UTC timestamp
+    foreach ($periods as $period) {
+        $start = strtotime($period['start']);
+        $end   = strtotime($period['end']);
         for ($h = 10; $h <= 17; $h++) {
             $slotDt    = new DateTime($date . sprintf(' %02d:00:00', $h), $localTz);
-            $slotStart = $slotDt->getTimestamp(); // UTC timestamp
+            $slotStart = $slotDt->getTimestamp();
             $slotEnd   = $slotStart + 3600;
             if ($start < $slotEnd && $end > $slotStart) {
                 $busySlots[] = sprintf('%02d:00', $h);
             }
         }
     }
-    return $busySlots;
+    return array_values(array_unique($busySlots));
 }
 
 function gcalCreateEvent($appt, $token, $serviceLabels, $calendarId = null, $colorId = null) {
