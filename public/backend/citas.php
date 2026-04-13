@@ -23,10 +23,15 @@ const NOTARY_CALENDAR_ID = 'notaryaplus31@gmail.com';
 // append its ID here and share it.
 const NOTARY_READ_CALENDAR_IDS = [
     'notaryaplus31@gmail.com',                                                                     // Myrna (primary)
-    '2025e3f6e24a55cee2d0d08205baa9d571bbe0a93aa72157115fef122af071a4@group.calendar.google.com', // legacy group calendar still in use
-    // TODO secretaries: add one ID per line as they are confirmed and shared.
-    // 'secretary-one@gmail.com',
-    // 'secretary-two@gmail.com',
+    '2025e3f6e24a55cee2d0d08205baa9d571bbe0a93aa72157115fef122af071a4@group.calendar.google.com', // legacy group calendar
+    'ale.notaryaplus@gmail.com',                                                                   // Ale (secretaria)
+    'cecilia1.notaryaplus@gmail.com',                                                              // Cecilia (secretaria)
+    'danae.notaryaplus@gmail.com',                                                                 // Danae (secretaria)
+    // TODO: add 4th secretary's calendar ID when confirmed.
+    // Each calendar ABOVE must be shared with the Service Account
+    // notaryaplus-calendar@notaryaplus-backend.iam.gserviceaccount.com
+    // with "See all event details" (or higher). Otherwise freeBusy returns
+    // an error for that calendar and it is silently skipped (logged).
 ];
 require_once __DIR__ . '/phpmailer/PHPMailer.php';
 require_once __DIR__ . '/phpmailer/SMTP.php';
