@@ -11,6 +11,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 @include __DIR__ . '/google-config.php';
 require_once __DIR__ . '/gcal-auth.php';
+
+// Single source of truth for which Google Calendar the public site reads.
+// google-config.php historically pointed to a secondary group calendar
+// that held only a fraction of Myrna's real appointments. She creates
+// every real booking in her primary Gmail calendar below, so we read/write
+// there. If you ever need to switch calendars, change ONLY this line.
+const NOTARY_CALENDAR_ID = 'notaryaplus31@gmail.com';
 require_once __DIR__ . '/phpmailer/PHPMailer.php';
 require_once __DIR__ . '/phpmailer/SMTP.php';
 require_once __DIR__ . '/phpmailer/Exception.php';
@@ -109,6 +116,7 @@ function gcalAccessToken($legacyRefreshToken = null) {
 
 function gcalBusySlots($date, $token) {
     if (!$token) return [];
+    $calId  = NOTARY_CALENDAR_ID;
     $tz     = new DateTimeZone('America/Kentucky/Louisville');
     $dtMin  = new DateTime($date . ' 00:00:00', $tz);
     $dtMax  = new DateTime($date . ' 23:59:59', $tz);
@@ -116,7 +124,7 @@ function gcalBusySlots($date, $token) {
         'timeMin'  => $dtMin->format(DateTime::RFC3339),
         'timeMax'  => $dtMax->format(DateTime::RFC3339),
         'timeZone' => 'America/Kentucky/Louisville',
-        'items'    => [['id' => GOOGLE_CALENDAR_ID]],
+        'items'    => [['id' => $calId]],
     ]);
     $res = curlPost(
         'https://www.googleapis.com/calendar/v3/freeBusy',
@@ -125,7 +133,7 @@ function gcalBusySlots($date, $token) {
     );
     if (!$res) return [];
     $data = json_decode($res, true);
-    $busy = $data['calendars'][GOOGLE_CALENDAR_ID]['busy'] ?? [];
+    $busy = $data['calendars'][$calId]['busy'] ?? [];
 
     $busySlots = [];
     $localTz   = new DateTimeZone('America/Kentucky/Louisville');
@@ -146,7 +154,7 @@ function gcalBusySlots($date, $token) {
 
 function gcalCreateEvent($appt, $token, $serviceLabels, $calendarId = null, $colorId = null) {
     if (!$token) return;
-    $calId   = $calendarId ?: (defined('GOOGLE_CALENDAR_ID') ? GOOGLE_CALENDAR_ID : null);
+    $calId   = $calendarId ?: NOTARY_CALENDAR_ID;
     if (!$calId) return;
     $label   = $serviceLabels[$appt['service']] ?? $appt['service'];
     $endHour = sprintf('%02d', (int)substr($appt['time'], 0, 2) + 1);
