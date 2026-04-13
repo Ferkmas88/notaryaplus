@@ -30,7 +30,7 @@ function gcalBase64UrlEncode($data) {
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
 }
 
-function gcalServiceAccountToken($scope = 'https://www.googleapis.com/auth/calendar.events') {
+function gcalServiceAccountToken($scope = 'https://www.googleapis.com/auth/calendar') {
     $keyPath = gcalServiceAccountKeyPath();
     if (!$keyPath) {
         error_log('[gcal-auth] service-account.json not found in any known location');

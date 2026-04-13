@@ -100,7 +100,9 @@ function gcalAccessToken($legacyRefreshToken = null) {
     // Prefer Service Account (never expires). Fall back to legacy OAuth
     // only if service-account.json is not yet deployed. This guarantees the
     // site keeps working during the transition window.
-    $token = gcalServiceAccountToken('https://www.googleapis.com/auth/calendar.events');
+    // Scope: full "calendar" — required for freeBusy.query. The narrower
+    // "calendar.events" scope returns 403 on freeBusy.
+    $token = gcalServiceAccountToken('https://www.googleapis.com/auth/calendar');
     if ($token) return $token;
     return gcalAccessTokenOAuth($legacyRefreshToken);
 }
