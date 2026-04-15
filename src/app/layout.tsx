@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { LangProvider } from "@/contexts/LangContext";
 
 export const metadata: Metadata = {
@@ -122,6 +123,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
           <ChatWidget />
+          <WhatsAppFloat />
         </LangProvider>
       </body>
     </html>
