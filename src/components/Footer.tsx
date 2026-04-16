@@ -122,10 +122,20 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-navy mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} 3-1 Notary A Plus. {t("footer.rights", lang)}</p>
-          <p>{t("footer.agent", lang)}</p>
-          <p>Sitio web por <a href="https://www.digitalamwebsites.com" target="_blank" rel="noopener" className="hover:text-gold transition-colors">Digital AM</a> — Agencia de marketing digital en Louisville, KY</p>
+        <div className="border-t border-navy mt-10 pt-6 flex flex-col gap-4 text-xs text-gray-500">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <Link href="/privacy" className="hover:text-gold transition-colors">
+              {lang === "es" ? "Política de Privacidad" : "Privacy Policy"}
+            </Link>
+            <Link href="/terms" className="hover:text-gold transition-colors">
+              {lang === "es" ? "Términos de Servicio" : "Terms of Service"}
+            </Link>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>&copy; {new Date().getFullYear()} 3-1 Notary A Plus. {t("footer.rights", lang)}</p>
+            <p>{t("footer.agent", lang)}</p>
+            <p>Sitio web por <a href="https://www.digitalamwebsites.com" target="_blank" rel="noopener" className="hover:text-gold transition-colors">Digital AM</a></p>
+          </div>
         </div>
       </div>
     </footer>

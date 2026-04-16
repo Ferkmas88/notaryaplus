@@ -1,0 +1,11 @@
+# Archivos grandes que no van a Vercel
+*.msi
+*.exe
+*.dmg
+*.iso
+blender-*
+fotos/
+data/
+.playwright-mcp/
+*.log
+*.backup

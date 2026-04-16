@@ -43,6 +43,21 @@ export const metadata: Metadata = {
     siteName: "3-1 Notary A Plus",
     type: "website",
     locale: "es_US",
+    images: [
+      {
+        url: "https://notaryaplus.com/og-image.png",
+        width: 1080,
+        height: 1080,
+        alt: "3-1 Notary A Plus — Taxes, Notaría e Inmigración en Louisville KY",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "3-1 Notary A Plus | Taxes, Notaría e Inmigración | Louisville, KY",
+    description:
+      "15 años sirviendo a la comunidad hispana de Louisville, KY. Llama al 502-654-7076.",
+    images: ["https://notaryaplus.com/og-image.png"],
   },
   robots: {
     index: true,

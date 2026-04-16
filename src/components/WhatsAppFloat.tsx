@@ -1,18 +1,6 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 const TRACKING_URL = "https://notaryaplus-crm.vercel.app/r/web";
 
 export default function WhatsAppFloat() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
   return (
     <>
       <a
