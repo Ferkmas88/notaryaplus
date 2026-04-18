@@ -144,6 +144,16 @@ export default function ChatWidget() {
     }
   }, [chatOpen]);
 
+  // Refocus el input cuando `sending` vuelve a false. El input tiene
+  // disabled={sending}; al deshabilitarlo el browser pierde el focus y no
+  // lo restituye. Con useEffect corremos después del commit de React, así
+  // el input ya está enabled cuando llamamos focus().
+  useEffect(() => {
+    if (!sending && chatOpen) {
+      inputRef.current?.focus();
+    }
+  }, [sending, chatOpen]);
+
   // Mount flag — used so the FAB plays its bounce-in only on first render.
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 400);
@@ -261,9 +271,7 @@ export default function ChatWidget() {
       setWiggleKey((k) => k + 1);
     } finally {
       setSending(false);
-      // El input tiene disabled={sending}; cuando se re-habilita, el browser
-      // no restituye el focus por sí solo. setTimeout(0) espera al re-render.
-      setTimeout(() => inputRef.current?.focus(), 0);
+      // Ver useEffect([sending, chatOpen]) abajo para re-focus del input.
     }
   }
 
