@@ -51,3 +51,6 @@ public/backend/admin/admin-config.php
 .claude/settings.local.json
 
 .vercel
+
+# Backup FTP — contiene secretos, no commitear nunca
+_hostinger_backup/

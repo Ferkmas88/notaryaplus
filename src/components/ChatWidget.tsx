@@ -261,6 +261,9 @@ export default function ChatWidget() {
       setWiggleKey((k) => k + 1);
     } finally {
       setSending(false);
+      // El input tiene disabled={sending}; cuando se re-habilita, el browser
+      // no restituye el focus por sí solo. setTimeout(0) espera al re-render.
+      setTimeout(() => inputRef.current?.focus(), 0);
     }
   }
 
