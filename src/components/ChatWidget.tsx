@@ -9,6 +9,7 @@
 // and lets the bot keep in-memory history per visitor.
 
 import { useEffect, useRef, useState } from "react";
+import VideoBuho from "./VideoBuho";
 
 const BOT_URL = "https://web-production-c32f8.up.railway.app/chat";
 
@@ -95,8 +96,18 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [wiggleKey, setWiggleKey] = useState(0);
+  const [showHint, setShowHint] = useState(false);
+  const [hintVariant, setHintVariant] = useState<"simple" | "full">("simple");
+  const [hintDismissed, setHintDismissed] = useState(false);
+  const [attentionActive, setAttentionActive] = useState(false);
+  const [headTilt, setHeadTilt] = useState({ x: 0, y: 0 });
+  const [hoveringFab, setHoveringFab] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const hasInteractedRef = useRef(false);
 
   // Greeting appears the first time the chat panel opens.
   useEffect(() => {
@@ -105,8 +116,9 @@ export default function ChatWidget() {
         {
           role: "bot",
           text:
-            "¡Hola! Soy el asistente virtual de 3-1 Notary A Plus. " +
-            "¿En qué puedo ayudarte? Taxes, notaría, inmigración, negocios, traducciones, camioneros…",
+            "¡Hola, vecino! 🦉 Soy Don Búho, el asistente de la oficina de Myrna. " +
+            "Dime en qué te puedo ayudar — taxes, notaría, inmigración, negocios, traducciones, camioneros… " +
+            "Aquí estamos para servirte.",
         },
       ]);
     }
@@ -123,12 +135,92 @@ export default function ChatWidget() {
   useEffect(() => {
     if (chatOpen) {
       setTimeout(() => inputRef.current?.focus(), 150);
+      hasInteractedRef.current = true;
+      setShowHint(false);
+      setAttentionActive(false);
     }
   }, [chatOpen]);
 
-  async function sendMessage(e?: React.FormEvent) {
-    e?.preventDefault();
-    const text = input.trim();
+  // Mount flag — used so the FAB plays its bounce-in only on first render.
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Hint bubble — two variants that alternate:
+  //   simple  → quick greeting ("Hola, soy Ciro. ¿Quieres agendar…?")
+  //   full    → 3 quick-action buttons (Agendar / Notarizar / Pregunta)
+  // First appearance at 4s = simple. Every 60s after, swap to the
+  // other variant. Dismissing with × or opening the chat stops the loop.
+  useEffect(() => {
+    if (hintDismissed) return;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+
+    // Initial: simple variant at 4s, visible 10s.
+    timeouts.push(
+      setTimeout(() => {
+        if (hintDismissed || hasInteractedRef.current) return;
+        setHintVariant("simple");
+        setShowHint(true);
+        timeouts.push(setTimeout(() => setShowHint(false), 10000));
+      }, 4000)
+    );
+
+    // Loop: every 60s, toggle variant and re-show for 10s.
+    const loop = setInterval(() => {
+      if (hintDismissed || hasInteractedRef.current) return;
+      setHintVariant((v) => (v === "simple" ? "full" : "simple"));
+      setShowHint(true);
+      setTimeout(() => setShowHint(false), 10000);
+    }, 60000);
+    return () => {
+      timeouts.forEach(clearTimeout);
+      clearInterval(loop);
+    };
+  }, [hintDismissed]);
+
+  // Attention pulse kicks in after 25s of chat-closed idle, repeats every
+  // 40s to nudge users back without being annoying. Stops on first open.
+  useEffect(() => {
+    if (chatOpen || hasInteractedRef.current) return;
+    const firstBurst = setTimeout(() => setAttentionActive(true), 25000);
+    const clearFirst = setTimeout(() => setAttentionActive(false), 32000);
+    const loop = setInterval(() => {
+      setAttentionActive(true);
+      setTimeout(() => setAttentionActive(false), 7000);
+    }, 40000);
+    return () => {
+      clearTimeout(firstBurst);
+      clearTimeout(clearFirst);
+      clearInterval(loop);
+    };
+  }, [chatOpen]);
+
+  // Head-tracking on the FAB: while the mouse hovers the FAB, rotate the
+  // owl a few degrees toward the cursor. Subtle but alive.
+  useEffect(() => {
+    if (!hoveringFab || !fabRef.current) {
+      setHeadTilt({ x: 0, y: 0 });
+      return;
+    }
+    const el = fabRef.current;
+    const handle = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / rect.width;
+      const dy = (e.clientY - cy) / rect.height;
+      setHeadTilt({
+        x: Math.max(-1, Math.min(1, dx)) * 8,
+        y: Math.max(-1, Math.min(1, dy)) * 6,
+      });
+    };
+    window.addEventListener("mousemove", handle);
+    return () => window.removeEventListener("mousemove", handle);
+  }, [hoveringFab]);
+
+  async function sendText(rawText: string) {
+    const text = rawText.trim();
     if (!text || sending) return;
     setInput("");
     setMessages((m) => [...m, { role: "user", text }]);
@@ -153,6 +245,7 @@ export default function ChatWidget() {
             "Perdón, no pude procesar eso. Intenta de nuevo o escríbenos por WhatsApp.",
         },
       ]);
+      setWiggleKey((k) => k + 1);
     } catch {
       setMessages((m) => [
         ...m,
@@ -162,9 +255,27 @@ export default function ChatWidget() {
             "Hubo un problema de conexión. Intenta de nuevo o escríbenos por WhatsApp.",
         },
       ]);
+      setWiggleKey((k) => k + 1);
     } finally {
       setSending(false);
     }
+  }
+
+  function sendMessage(e?: React.FormEvent) {
+    e?.preventDefault();
+    sendText(input);
+  }
+
+  // Called by quick-action buttons in the hint bubble — opens the chat
+  // panel and auto-sends a pre-written intent message as if the user
+  // typed it, so the bot replies immediately with a specific flow.
+  function openChatWithPrompt(text: string) {
+    hasInteractedRef.current = true;
+    setHintDismissed(true);
+    setShowHint(false);
+    setChatOpen(true);
+    // Wait a tick for chatOpen effect to run (greeting + focus) before sending.
+    setTimeout(() => sendText(text), 250);
   }
 
   return (
@@ -173,28 +284,30 @@ export default function ChatWidget() {
       {chatOpen && (
         <div
           className="fixed z-50 flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden
-                     bottom-24 right-5 w-[calc(100vw-2.5rem)] max-w-[380px] h-[540px] max-h-[calc(100vh-7rem)]"
+                     bottom-24 right-5 w-[calc(100vw-2.5rem)] max-w-[380px] h-[540px] max-h-[calc(100vh-7rem)]
+                     animate-slide-up-fade origin-bottom-right"
           role="dialog"
           aria-label="Chat con 3-1 Notary A Plus"
         >
           {/* Header */}
           <div className="bg-navy px-4 py-3 flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center">
-                <svg className="w-5 h-5 text-navy" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
+              <div
+                key={`header-wiggle-${wiggleKey}`}
+                className="w-11 h-11 rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center overflow-hidden animate-wiggle"
+              >
+                <VideoBuho />
               </div>
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-navy rounded-full" />
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-navy rounded-full animate-status-blink" />
             </div>
             <div className="flex-1 min-w-0">
               <p
                 className="text-white font-bold text-sm leading-tight truncate"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                3-1 Notary A Plus
+                Don Búho
               </p>
-              <p className="text-mint text-xs truncate">Asistente virtual · En línea</p>
+              <p className="text-mint text-xs truncate">Asistente de Myrna · En línea</p>
             </div>
             <button
               onClick={() => setChatOpen(false)}
@@ -215,10 +328,15 @@ export default function ChatWidget() {
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex items-end gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
+                {m.role === "bot" && (
+                  <div className="w-7 h-7 rounded-full bg-gold/20 border border-gold/40 overflow-hidden shrink-0">
+                    <VideoBuho />
+                  </div>
+                )}
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
                     m.role === "user"
                       ? "bg-gold text-navy font-medium rounded-br-sm"
                       : "bg-white text-gray-800 shadow-sm rounded-bl-sm border border-gray-100"
@@ -229,7 +347,10 @@ export default function ChatWidget() {
               </div>
             ))}
             {sending && (
-              <div className="flex justify-start">
+              <div className="flex items-end gap-2 justify-start">
+                <div className="w-7 h-7 rounded-full bg-gold/20 border border-gold/40 overflow-hidden shrink-0 animate-thinking-tilt">
+                  <VideoBuho />
+                </div>
                 <div className="bg-white text-gray-500 shadow-sm rounded-2xl rounded-bl-sm border border-gray-100 px-4 py-2.5 text-sm">
                   <span className="inline-flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -267,15 +388,138 @@ export default function ChatWidget() {
 
       {/* Main FAB */}
       {!chatOpen && (
-        <button
-          onClick={() => setChatOpen(true)}
-          aria-label="Abrir chat"
-          className="fixed bottom-5 right-5 z-50 w-16 h-16 rounded-full shadow-xl hover:shadow-2xl flex items-center justify-center transition-all duration-300 bg-gold hover:scale-110"
-        >
-          <svg className="w-8 h-8 text-navy" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
-          </svg>
-        </button>
+        <div className="fixed bottom-5 right-5 z-50 flex items-end gap-3">
+          {/* Hint bubble — simple or full variant */}
+          {showHint && hintVariant === "simple" && (
+            <button
+              type="button"
+              onClick={() => {
+                hasInteractedRef.current = true;
+                setHintDismissed(true);
+                setShowHint(false);
+                setChatOpen(true);
+              }}
+              className="mb-3 max-w-[240px] bg-white text-navy rounded-2xl rounded-br-sm shadow-xl border border-gold/30
+                         px-4 py-2.5 text-sm font-medium animate-hint-slide-in relative text-left hover:bg-gold/5 transition-colors"
+            >
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowHint(false);
+                  setHintDismissed(true);
+                }}
+                role="button"
+                aria-label="Cerrar aviso"
+                className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-navy text-white text-xs flex items-center justify-center hover:bg-navy-dark"
+              >
+                ×
+              </span>
+              Hola, soy Ciro. ¿Quieres agendar o tienes una pregunta?
+              <span className="absolute bottom-0 -right-1.5 w-3 h-3 bg-white border-r border-b border-gold/30 rotate-45 translate-y-1" />
+            </button>
+          )}
+
+          {showHint && hintVariant === "full" && (
+            <div
+              className="mb-3 w-[260px] bg-white text-navy rounded-2xl rounded-br-sm shadow-xl border border-gold/30
+                         p-3 animate-hint-slide-in relative"
+            >
+              <button
+                onClick={() => {
+                  setShowHint(false);
+                  setHintDismissed(true);
+                }}
+                aria-label="Cerrar aviso"
+                className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-navy text-white text-xs flex items-center justify-center hover:bg-navy-dark z-10"
+              >
+                ×
+              </button>
+              <p className="text-sm font-semibold mb-2.5 leading-snug">
+                ¿En qué te puedo ayudar?
+              </p>
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => openChatWithPrompt("Quiero agendar una cita. ¿Qué horarios tienen disponibles?")}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gold text-navy font-semibold text-sm hover:bg-gold-light transition-colors text-left"
+                >
+                  <span>📅</span>
+                  <span>Agendar cita ahora</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openChatWithPrompt("Necesito notarizar un documento. ¿Qué necesito llevar y cuánto cuesta?")}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-mint text-navy font-medium text-sm hover:bg-mint-dark transition-colors text-left"
+                >
+                  <span>📄</span>
+                  <span>Notarizar documento</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    hasInteractedRef.current = true;
+                    setHintDismissed(true);
+                    setShowHint(false);
+                    setChatOpen(true);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-navy font-medium text-sm hover:bg-gray-200 transition-colors text-left"
+                >
+                  <span>❓</span>
+                  <span>Solo tengo una pregunta</span>
+                </button>
+              </div>
+              <span className="absolute bottom-0 -right-1.5 w-3 h-3 bg-white border-r border-b border-gold/30 rotate-45 translate-y-1" />
+            </div>
+          )}
+
+          {/* FAB wrapper — holds bounce-in + float, inner button rotates toward cursor */}
+          <div
+            className={`relative ${mounted ? "animate-float" : "animate-fab-bounce-in"}`}
+          >
+            {/* Attention rings — two expanding pulses when attentionActive */}
+            {attentionActive && (
+              <>
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full bg-gold animate-attention-ring pointer-events-none"
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full bg-gold animate-attention-ring pointer-events-none"
+                  style={{ animationDelay: "0.9s" }}
+                />
+              </>
+            )}
+
+            <button
+              ref={fabRef}
+              onClick={() => setChatOpen(true)}
+              onMouseEnter={() => setHoveringFab(true)}
+              onMouseLeave={() => setHoveringFab(false)}
+              aria-label="Abrir chat con Don Búho"
+              className={`group relative w-16 h-16 rounded-full shadow-xl hover:shadow-2xl
+                          bg-gold overflow-hidden ring-2 ring-white/40
+                          ${attentionActive ? "animate-attention-pulse" : ""}
+                          transition-transform duration-200 ease-out`}
+              style={{
+                transform: hoveringFab
+                  ? `scale(1.1) rotate(${-headTilt.x * 0.6}deg)`
+                  : undefined,
+              }}
+            >
+              <div
+                className="absolute inset-0 transition-transform duration-150 ease-out"
+                style={{
+                  transform: hoveringFab
+                    ? `translate(${headTilt.x * 0.4}px, ${headTilt.y * 0.3}px)`
+                    : undefined,
+                }}
+              >
+                <VideoBuho />
+              </div>
+            </button>
+          </div>
+        </div>
       )}
     </>
   );

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useLang } from "@/contexts/LangContext";
 import { t } from "@/lib/i18n";
+import IRSStamp from "@/components/IRSStamp";
+import LiveCounter from "@/components/LiveCounter";
 
 export default function Home() {
   const { lang } = useLang();
@@ -95,6 +97,31 @@ export default function Home() {
             <circle cx="100" cy="500" r="200" fill="#C5E8D5" />
           </svg>
         </div>
+        {/* Floating official stamp — visual cue of "this is real / official" */}
+        <div className="hidden lg:block absolute top-16 right-16 z-10">
+          <IRSStamp />
+        </div>
+
+        {/* Floating document — hero visual */}
+        <div className="hidden xl:block absolute bottom-28 right-24 z-0 opacity-90 pointer-events-none">
+          <div className="animate-doc-float">
+            <svg viewBox="0 0 200 240" className="w-48 h-60 drop-shadow-2xl">
+              <rect x="15" y="10" width="170" height="220" rx="6" fill="white" />
+              <rect x="15" y="10" width="170" height="30" rx="6" fill="#1B3356" />
+              <rect x="15" y="34" width="170" height="6" fill="#1B3356" />
+              <line x1="30" y1="60" x2="160" y2="60" stroke="#1B3356" strokeOpacity="0.2" strokeWidth="1" />
+              <line x1="30" y1="75" x2="130" y2="75" stroke="#1B3356" strokeOpacity="0.2" strokeWidth="1" />
+              <line x1="30" y1="90" x2="150" y2="90" stroke="#1B3356" strokeOpacity="0.2" strokeWidth="1" />
+              <line x1="30" y1="105" x2="100" y2="105" stroke="#1B3356" strokeOpacity="0.2" strokeWidth="1" />
+              <line x1="30" y1="125" x2="160" y2="125" stroke="#1B3356" strokeOpacity="0.2" strokeWidth="1" />
+              <line x1="30" y1="140" x2="140" y2="140" stroke="#1B3356" strokeOpacity="0.2" strokeWidth="1" />
+              <line x1="30" y1="155" x2="120" y2="155" stroke="#1B3356" strokeOpacity="0.2" strokeWidth="1" />
+              <rect x="30" y="180" width="60" height="24" rx="3" fill="#C8A214" fillOpacity="0.15" stroke="#C8A214" strokeWidth="1" />
+              <text x="60" y="196" textAnchor="middle" fontSize="10" fontWeight="700" fill="#C8A214">FIRMA</text>
+            </svg>
+          </div>
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 pt-5 pb-20 md:pt-9 md:pb-28">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 rounded-full px-4 py-1.5 mb-5">
@@ -160,7 +187,7 @@ export default function Home() {
                 </a>
               </div>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 mb-6">
               <Link href="/citas" className="btn-gold text-base">
                 {t("home.hero.cta1", lang)}
               </Link>
@@ -168,6 +195,8 @@ export default function Home() {
                 {t("home.hero.cta2", lang)}
               </Link>
             </div>
+            {/* Live social proof counter */}
+            <LiveCounter />
           </div>
         </div>
 
