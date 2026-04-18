@@ -33,3 +33,6 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
+            backend/**
+            backend
+            .ftp-deploy-sync-state.json
