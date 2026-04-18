@@ -1,0 +1,70 @@
+name: Bot Healthcheck
+
+"on":
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping bot root
+        run: |
+          CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+            https://web-production-c32f8.up.railway.app/ \
+            --max-time 15)
+          BODY=$(cat /tmp/resp.json 2>/dev/null | head -c 200)
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Bot DOWN — HTTP $CODE | $BODY"
+            exit 1
+          fi
+          echo "Bot OK — $BODY"
+
+      - name: Probe /chat
+        if: success()
+        run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST https://web-production-c32f8.up.railway.app/chat \
+            -H "Content-Type: application/json" \
+            -d '{"session_id":"healthcheck","message":"hola"}' \
+            --max-time 20)
+          if [ "$CODE" != "200" ]; then
+            echo "::error::/chat broken — HTTP $CODE"
+            exit 1
+          fi
+
+      - name: Open issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'bot-down',
+              per_page: 5,
+            });
+            const title = '🚨 Bot healthcheck failed';
+            const body = `Run ${context.runNumber} at ${new Date().toISOString()}\n${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['bot-down'],
+              });
+            }
