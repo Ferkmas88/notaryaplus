@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useLang } from "@/contexts/LangContext";
 import { t } from "@/lib/i18n";
+import UplDisclaimer from "@/components/UplDisclaimer";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 function formatTime12h(time24: string): string {
   const [h, m] = time24.split(":").map(Number);
@@ -11,12 +15,20 @@ function formatTime12h(time24: string): string {
   return `${h12}:${m.toString().padStart(2, "0")} ${period}`;
 }
 
+function pad2(n: number): string {
+  return n.toString().padStart(2, "0");
+}
+
+function toLocalDateStr(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
 function getMinDate(): string {
-  const d = new Date();
-  return d.toISOString().split("T")[0];
+  return toLocalDateStr(new Date());
 }
 
 type Step = "service" | "datetime" | "info" | "success";
+type DayStatus = "available" | "full" | "unknown";
 
 export default function CitasPage() {
   const { lang } = useLang();
@@ -34,6 +46,15 @@ export default function CitasPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successId, setSuccessId] = useState("");
+  const [consent, setConsent] = useState(false);
+
+  // Calendario custom
+  const initialMonth = new Date();
+  initialMonth.setDate(1);
+  const [viewMonth, setViewMonth] = useState<Date>(initialMonth);
+  const [monthAvailability, setMonthAvailability] = useState<Record<string, DayStatus>>({});
+  const [monthLoading, setMonthLoading] = useState(false);
+  const availabilityCache = useRef<Record<string, Record<string, DayStatus>>>({});
 
   const SERVICES = [
     { value: "taxes_individual", label: t("citas.svc.taxes_individual", lang) },
@@ -62,12 +83,12 @@ export default function CitasPage() {
 
     setLoadingSlots(true);
     setTime("");
-    fetch(`/backend/citas.php?date=${date}`)
+    fetch(`${API_BASE}/backend/citas.php?date=${date}`)
       .then((r) => r.json())
       .then((data) => {
         let slots = data.availableSlots || [];
         // Si es hoy, filtrar horas que ya pasaron
-        const today = new Date().toISOString().split("T")[0];
+        const today = getMinDate();
         if (date === today) {
           const nowHour = new Date().getHours();
           slots = slots.filter((s: string) => parseInt(s.split(":")[0]) > nowHour);
@@ -82,13 +103,77 @@ export default function CitasPage() {
       .finally(() => setLoadingSlots(false));
   }, [date]);
 
+  // Pre-cargar disponibilidad de todos los días hábiles del mes visible
+  useEffect(() => {
+    const year = viewMonth.getFullYear();
+    const month = viewMonth.getMonth();
+    const cacheKey = `${year}-${pad2(month + 1)}`;
+
+    if (availabilityCache.current[cacheKey]) {
+      setMonthAvailability(availabilityCache.current[cacheKey]);
+      return;
+    }
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const daysToFetch: string[] = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj = new Date(year, month, d);
+      if (dateObj < today) continue;
+      if (dateObj.getDay() === 0) continue; // domingo
+      daysToFetch.push(toLocalDateStr(dateObj));
+    }
+
+    if (daysToFetch.length === 0) {
+      setMonthAvailability({});
+      availabilityCache.current[cacheKey] = {};
+      return;
+    }
+
+    let cancelled = false;
+    setMonthLoading(true);
+    setMonthAvailability({});
+
+    const nowHour = new Date().getHours();
+    const todayStrLocal = getMinDate();
+
+    Promise.all(
+      daysToFetch.map((ds) =>
+        fetch(`${API_BASE}/backend/citas.php?date=${ds}`)
+          .then((r) => r.json())
+          .then((data) => {
+            let slots: string[] = data.availableSlots || [];
+            const booked: string[] = data.bookedTimes || [];
+            if (ds === todayStrLocal) {
+              slots = slots.filter((s) => parseInt(s.split(":")[0]) > nowHour);
+            }
+            const free = slots.filter((s) => !booked.includes(s));
+            const status: DayStatus = free.length > 0 ? "available" : "full";
+            return { ds, status };
+          })
+          .catch(() => ({ ds, status: "unknown" as DayStatus }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      const map: Record<string, DayStatus> = {};
+      results.forEach((r) => { map[r.ds] = r.status; });
+      availabilityCache.current[cacheKey] = map;
+      setMonthAvailability(map);
+      setMonthLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [viewMonth]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSubmitting(true);
 
     try {
-      const res = await fetch("/backend/citas.php", {
+      const res = await fetch(`${API_BASE}/backend/citas.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, phone, email, service, date, time, notes }),
@@ -99,7 +184,7 @@ export default function CitasPage() {
       if (!res.ok) {
         setError(data.error || t("citas.error.generic", lang));
         if (res.status === 409) {
-          const refreshRes = await fetch(`/backend/citas.php?date=${date}`);
+          const refreshRes = await fetch(`${API_BASE}/backend/citas.php?date=${date}`);
           const refreshData = await refreshRes.json();
           setBookedSlots(refreshData.bookedTimes || []);
           setTime("");
@@ -270,20 +355,132 @@ export default function CitasPage() {
 
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">{t("citas.date.label", lang)}</label>
-                <input
-                  type="date"
-                  min={getMinDate()}
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-gold text-gray-700"
-                />
+
+                {/* Calendario custom */}
+                {(() => {
+                  const year = viewMonth.getFullYear();
+                  const month = viewMonth.getMonth();
+                  const firstDay = new Date(year, month, 1);
+                  const firstWeekday = firstDay.getDay();
+                  const daysInMonth = new Date(year, month + 1, 0).getDate();
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+
+                  const monthName = viewMonth.toLocaleDateString(lang === "es" ? "es-US" : "en-US", { month: "long", year: "numeric" });
+                  const weekdayLabels = lang === "es"
+                    ? ["D", "L", "M", "X", "J", "V", "S"]
+                    : ["S", "M", "T", "W", "T", "F", "S"];
+
+                  const cells: React.ReactNode[] = [];
+                  for (let i = 0; i < firstWeekday; i++) {
+                    cells.push(<div key={`empty-${i}`} />);
+                  }
+
+                  for (let d = 1; d <= daysInMonth; d++) {
+                    const cellDate = new Date(year, month, d);
+                    const ds = toLocalDateStr(cellDate);
+                    const isPast = cellDate < today;
+                    const isSunday = cellDate.getDay() === 0;
+                    const status = monthAvailability[ds];
+                    const isFull = status === "full";
+                    const isSelected = ds === date;
+                    const isDisabled = isPast || isSunday || isFull;
+
+                    let cls = "aspect-square flex items-center justify-center text-sm rounded-lg border-2 transition-all font-medium ";
+                    if (isSelected) {
+                      cls += "border-gold bg-gold text-white shadow-md";
+                    } else if (isPast || isSunday) {
+                      cls += "border-transparent text-gray-300 cursor-not-allowed bg-gray-50";
+                    } else if (isFull) {
+                      cls += "border-gray-100 bg-gray-50 text-gray-400 line-through cursor-not-allowed opacity-60";
+                    } else {
+                      cls += "border-gray-200 bg-white text-gray-700 hover:border-gold hover:bg-gold/5 cursor-pointer";
+                    }
+
+                    cells.push(
+                      <button
+                        key={ds}
+                        type="button"
+                        disabled={isDisabled}
+                        aria-disabled={isDisabled}
+                        aria-label={ds}
+                        onClick={() => { if (!isDisabled) setDate(ds); }}
+                        className={cls}
+                      >
+                        {d}
+                      </button>
+                    );
+                  }
+
+                  const canGoBack = (() => {
+                    const prev = new Date(year, month - 1, 1);
+                    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    return prev >= thisMonth;
+                  })();
+
+                  return (
+                    <div className="border-2 border-gray-200 rounded-xl p-4 bg-white">
+                      <div className="flex items-center justify-between mb-4">
+                        <button
+                          type="button"
+                          disabled={!canGoBack}
+                          onClick={() => setViewMonth(new Date(year, month - 1, 1))}
+                          aria-label={t("citas.cal.prev", lang)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg text-navy hover:bg-gold/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <div className="font-semibold text-navy capitalize">{monthName}</div>
+                        <button
+                          type="button"
+                          onClick={() => setViewMonth(new Date(year, month + 1, 1))}
+                          aria-label={t("citas.cal.next", lang)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg text-navy hover:bg-gold/10"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-7 gap-1 mb-2">
+                        {weekdayLabels.map((w, i) => (
+                          <div key={i} className="text-center text-xs font-semibold text-gray-400 py-1">{w}</div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-1">{cells}</div>
+                      {monthLoading && (
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-3 justify-center">
+                          <div className="w-3 h-3 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+                          {t("citas.cal.checking", lang)}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded border-2 border-gray-200 bg-white"></div>
+                          <span>{t("citas.cal.legend.available", lang)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded border-2 border-gray-100 bg-gray-50 line-through"></div>
+                          <span>{t("citas.cal.legend.full", lang)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded bg-gray-50"></div>
+                          <span>{t("citas.cal.legend.closed", lang)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {isDayOff && (
                   <p className="text-red-600 text-sm mt-2">
                     {t("citas.sunday.msg", lang)}
                   </p>
                 )}
                 {date && !isDayOff && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-2">
                     Horario: {new Date(date + "T12:00:00").getDay() === 6 ? t("citas.schedule.sat", lang) : t("citas.schedule.weekday", lang)}
                   </p>
                 )}
@@ -373,6 +570,10 @@ export default function CitasPage() {
                 {t("citas.step3.title", lang)}
               </h2>
 
+              <div className="mb-5">
+                <UplDisclaimer variant="compact" />
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -435,9 +636,26 @@ export default function CitasPage() {
                   </div>
                 )}
 
+                <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-1 w-4 h-4 accent-gold shrink-0 cursor-pointer"
+                  />
+                  <span className="leading-snug">
+                    {t("legal.consent.prefix", lang)}{" "}
+                    <Link href="/privacy" className="text-gold hover:underline font-medium">
+                      {t("legal.consent.privacy", lang)}
+                    </Link>{" "}
+                    {t("legal.consent.middle", lang)}
+                  </span>
+                </label>
+
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || !consent}
                   className="w-full btn-gold py-4 text-base disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {submitting ? (

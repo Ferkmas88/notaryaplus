@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLang } from "@/contexts/LangContext";
 import { t } from "@/lib/i18n";
+import UplDisclaimer from "@/components/UplDisclaimer";
 
 export default function InmigracionPage() {
   const { lang } = useLang();
@@ -74,6 +75,8 @@ export default function InmigracionPage() {
           </div>
         </div>
       </section>
+
+      <UplDisclaimer variant="banner" />
 
       <section className="bg-mint-light py-10 pb-16">
         <div className="max-w-7xl mx-auto px-4">

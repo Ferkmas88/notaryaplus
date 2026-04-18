@@ -10,6 +10,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import VideoBuho from "./VideoBuho";
+import { useLang } from "@/contexts/LangContext";
+import { t } from "@/lib/i18n";
 
 const BOT_URL = "https://web-production-c32f8.up.railway.app/chat";
 
@@ -92,6 +94,7 @@ function renderBold(text: string, keyBase: string): React.ReactNode {
 }
 
 export default function ChatWidget() {
+  const { lang } = useLang();
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -318,6 +321,11 @@ export default function ChatWidget() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          </div>
+
+          {/* LLM notice */}
+          <div className="bg-mint-light/80 border-b border-mint px-4 py-2 text-[11px] text-navy/80 leading-snug">
+            {t("chat.llmNotice", lang)}
           </div>
 
           {/* Messages */}

@@ -123,6 +123,13 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-navy mt-10 pt-6 flex flex-col gap-4 text-xs text-gray-500">
+          <p className="text-center text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            <strong className="text-gray-300">{t("legal.footer.note", lang)}</strong>{" "}
+            {t("legal.upl.short", lang)}{" "}
+            <Link href="/privacy#upl" className="text-gold hover:underline">
+              {t("legal.footer.link", lang)}
+            </Link>
+          </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link href="/privacy" className="hover:text-gold transition-colors">
               {lang === "es" ? "Política de Privacidad" : "Privacy Policy"}

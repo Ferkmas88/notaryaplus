@@ -449,6 +449,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "citas.strip.location.desc": "8514 Preston Hwy, Louisville, KY 40219. Estacionamiento disponible.",
     "citas.schedule.sat": "10:00 AM – 5:00 PM",
     "citas.schedule.weekday": "10:00 AM – 6:00 PM",
+    "citas.cal.checking": "Verificando disponibilidad del mes...",
+    "citas.cal.legend.available": "Con cupo",
+    "citas.cal.legend.full": "Sin cupo",
+    "citas.cal.legend.closed": "Cerrado",
+    "citas.cal.prev": "Mes anterior",
+    "citas.cal.next": "Mes siguiente",
 
     "citas.svc.taxes_individual": "Taxes Individuales",
     "citas.svc.taxes_negocio": "Taxes de Negocio / Corporación",
@@ -530,6 +536,25 @@ const translations: Record<Lang, Record<string, string>> = {
     "servicios.traducciones.i3": "Títulos Universitarios",
     "servicios.traducciones.i4": "Certificados de Nacimiento",
     "servicios.traducciones.i5": "Documentos Legales",
+
+    // Legal — UPL disclaimer (Unauthorized Practice of Law)
+    "legal.upl.title": "Aviso legal importante — No somos abogados",
+    "legal.upl.body":
+      "3-1 Notary A Plus ofrece servicios de notarización (notary public) y preparación de documentos. NO somos abogados y NO brindamos asesoría legal. El término 'Notario Público' en Estados Unidos se refiere a un 'notary public' y NO tiene el mismo significado que en Latinoamérica, donde un 'notario' es un abogado con licencia. Para asesoría legal, consulte con un abogado autorizado en Kentucky.",
+    "legal.upl.shortTitle": "No somos abogados",
+    "legal.upl.short":
+      "Ofrecemos servicios de notary public y preparación de documentos. No brindamos asesoría legal. Para asesoría legal, consulte con un abogado autorizado en Kentucky.",
+    "legal.footer.note": "No somos abogados.",
+    "legal.footer.link": "Leer disclaimer completo",
+
+    // Legal — consent checkbox en /citas
+    "legal.consent.prefix": "Acepto la",
+    "legal.consent.privacy": "Política de Privacidad",
+    "legal.consent.middle": "y autorizo a 3-1 Notary A Plus a contactarme por email y SMS para confirmar o reprogramar mi cita.",
+
+    // Chat — aviso de LLM
+    "chat.llmNotice":
+      "Este chat usa IA (Anthropic). Las conversaciones se procesan en servidores externos. No compartas información sensible (SSN, pasaporte, datos financieros).",
   },
 
   en: {
@@ -975,6 +1000,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "citas.strip.location.desc": "8514 Preston Hwy, Louisville, KY 40219. Parking available.",
     "citas.schedule.sat": "10:00 AM – 5:00 PM",
     "citas.schedule.weekday": "10:00 AM – 6:00 PM",
+    "citas.cal.checking": "Checking month availability...",
+    "citas.cal.legend.available": "Available",
+    "citas.cal.legend.full": "Full",
+    "citas.cal.legend.closed": "Closed",
+    "citas.cal.prev": "Previous month",
+    "citas.cal.next": "Next month",
 
     "citas.svc.taxes_individual": "Individual Taxes",
     "citas.svc.taxes_negocio": "Business / Corporation Taxes",
@@ -1056,5 +1087,24 @@ const translations: Record<Lang, Record<string, string>> = {
     "servicios.traducciones.i3": "University Degrees",
     "servicios.traducciones.i4": "Birth Certificates",
     "servicios.traducciones.i5": "Legal Documents",
+
+    // Legal — UPL disclaimer (Unauthorized Practice of Law)
+    "legal.upl.title": "Important legal notice — We are not attorneys",
+    "legal.upl.body":
+      "3-1 Notary A Plus provides notary public and document preparation services. We are NOT attorneys and do NOT provide legal advice. The term 'Notario Público' in the United States refers to a notary public and does not have the same meaning as in Latin American countries, where a 'notario' is a licensed attorney. For legal advice, consult a licensed Kentucky attorney.",
+    "legal.upl.shortTitle": "We are not attorneys",
+    "legal.upl.short":
+      "We provide notary public and document preparation services. We do not provide legal advice. For legal advice, consult a licensed Kentucky attorney.",
+    "legal.footer.note": "We are not attorneys.",
+    "legal.footer.link": "Read full disclaimer",
+
+    // Legal — consent checkbox on /citas
+    "legal.consent.prefix": "I agree to the",
+    "legal.consent.privacy": "Privacy Policy",
+    "legal.consent.middle": "and authorize 3-1 Notary A Plus to contact me via email and SMS to confirm or reschedule my appointment.",
+
+    // Chat — LLM notice
+    "chat.llmNotice":
+      "This chat uses AI (Anthropic). Conversations are processed on external servers. Do not share sensitive info (SSN, passport, financial data).",
   },
 };
