@@ -119,7 +119,7 @@ export default function ChatWidget() {
         {
           role: "bot",
           text:
-            "¡Hola, vecino! 🦉 Soy Don Búho, el asistente de la oficina de Myrna. " +
+            "¡Hola, vecino! 🦉 Soy Ciro, el asistente de la oficina de Myrna. " +
             "Dime en qué te puedo ayudar — taxes, notaría, inmigración, negocios, traducciones, camioneros… " +
             "Aquí estamos para servirte.",
         },
@@ -319,7 +319,7 @@ export default function ChatWidget() {
                 className="text-white font-bold text-sm leading-tight truncate"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                Don Búho
+                Ciro
               </p>
               <p className="text-mint text-xs truncate">Asistente de Myrna · En línea</p>
             </div>
@@ -515,7 +515,7 @@ export default function ChatWidget() {
               onClick={() => setChatOpen(true)}
               onMouseEnter={() => setHoveringFab(true)}
               onMouseLeave={() => setHoveringFab(false)}
-              aria-label="Abrir chat con Don Búho"
+              aria-label="Abrir chat con Ciro"
               className={`group relative w-16 h-16 rounded-full shadow-xl hover:shadow-2xl
                           bg-gold overflow-hidden ring-2 ring-white/40
                           ${attentionActive ? "animate-attention-pulse" : ""}
