@@ -21,10 +21,12 @@ Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 # XSS Protection — capa extra para browsers viejos
 Header always set X-XSS-Protection "1; mode=block"
 
-# CSP — permite Google Fonts, Maps, WhatsApp, y el bot de Railway
-# connect-src incluye el bot de Railway (web-production-c32f8.up.railway.app)
-# que es el endpoint POST /chat del ChatWidget embebido.
-Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' maps.googleapis.com maps.gstatic.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; frame-src www.google.com maps.google.com calendar.google.com; img-src 'self' data: blob: maps.gstatic.com maps.googleapis.com *.googleapis.com; connect-src 'self' maps.googleapis.com https://web-production-c32f8.up.railway.app;"
+# CSP — permite Google Fonts, Maps, Google Analytics (GA4 + GTM), WhatsApp, y el bot de Railway
+# - script-src:   GTM (googletagmanager.com) carga el loader de GA4 y Maps JS.
+# - img-src:      GA4 usa beacons GIF hacia google-analytics.com + region1.
+# - connect-src:  GA4 manda hits por fetch/XHR a google-analytics.com, analytics.google.com,
+#                 region1.google-analytics.com, y el bot de Railway para el ChatWidget.
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' maps.googleapis.com maps.gstatic.com www.googletagmanager.com www.google-analytics.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com data:; frame-src www.google.com maps.google.com calendar.google.com; img-src 'self' data: blob: maps.gstatic.com maps.googleapis.com *.googleapis.com www.googletagmanager.com www.google-analytics.com *.google-analytics.com; connect-src 'self' maps.googleapis.com https://web-production-c32f8.up.railway.app https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.google-analytics.com;"
 
 # ============================================
 # Cache

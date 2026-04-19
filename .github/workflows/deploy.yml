@@ -21,6 +21,10 @@ jobs:
 
       - name: Build static export
         run: npm run build
+        env:
+          # NEXT_PUBLIC_* se inlinea en build (static export). Si el secret no existe
+          # todavia, queda vacio y <GoogleAnalytics /> no monta nada (safe default).
+          NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
 
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

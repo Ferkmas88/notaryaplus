@@ -3,6 +3,9 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
+import ConsentProvider from "@/components/ConsentProvider";
+import CookieBanner from "@/components/CookieBanner";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { LangProvider } from "@/contexts/LangContext";
 
 export const metadata: Metadata = {
@@ -132,12 +135,18 @@ export default function RootLayout({
             }),
           }}
         />
-        <LangProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatWidget />
-        </LangProvider>
+        <ConsentProvider>
+          <LangProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <ChatWidget />
+            <CookieBanner />
+          </LangProvider>
+          {/* GA4 se inyecta solo si el usuario acepto analytics.
+              Fuera de LangProvider porque no depende del idioma. */}
+          <GoogleAnalytics />
+        </ConsentProvider>
       </body>
     </html>
   );
