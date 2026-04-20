@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useLang } from "@/contexts/LangContext";
 import { t } from "@/lib/i18n";
 import IRSStamp from "@/components/IRSStamp";
-import LiveCounter from "@/components/LiveCounter";
 
 export default function Home() {
   const { lang } = useLang();
@@ -195,8 +194,6 @@ export default function Home() {
                 {t("home.hero.cta2", lang)}
               </Link>
             </div>
-            {/* Live social proof counter */}
-            <LiveCounter />
           </div>
         </div>
 

@@ -107,6 +107,15 @@ export default function ChatWidget() {
   const [attentionActive, setAttentionActive] = useState(false);
   const [headTilt, setHeadTilt] = useState({ x: 0, y: 0 });
   const [hoveringFab, setHoveringFab] = useState(false);
+  // Hide the owl FAB for the rest of this browser tab session.
+  // Persisted in sessionStorage so it resets on next visit — intencional
+  // para que quien busque ayuda vuelva a ver el botón mañana.
+  const [widgetHidden, setWidgetHidden] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem("np_widget_hidden") === "1") {
+      setWidgetHidden(true);
+    }
+  }, []);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
@@ -406,7 +415,7 @@ export default function ChatWidget() {
       )}
 
       {/* Main FAB */}
-      {!chatOpen && (
+      {!chatOpen && !widgetHidden && (
         <div className="fixed bottom-5 right-5 z-50 flex items-end gap-3">
           {/* Hint bubble — simple or full variant */}
           {showHint && hintVariant === "simple" && (
@@ -510,33 +519,54 @@ export default function ChatWidget() {
               </>
             )}
 
-            <button
-              ref={fabRef}
-              onClick={() => setChatOpen(true)}
-              onMouseEnter={() => setHoveringFab(true)}
-              onMouseLeave={() => setHoveringFab(false)}
-              aria-label="Abrir chat con Ciro"
-              className={`group relative w-16 h-16 rounded-full shadow-xl hover:shadow-2xl
-                          bg-gold overflow-hidden ring-2 ring-white/40
-                          ${attentionActive ? "animate-attention-pulse" : ""}
-                          transition-transform duration-200 ease-out`}
-              style={{
-                transform: hoveringFab
-                  ? `scale(1.1) rotate(${-headTilt.x * 0.6}deg)`
-                  : undefined,
-              }}
-            >
-              <div
-                className="absolute inset-0 transition-transform duration-150 ease-out"
+            <div className="relative">
+              <button
+                ref={fabRef}
+                onClick={() => setChatOpen(true)}
+                onMouseEnter={() => setHoveringFab(true)}
+                onMouseLeave={() => setHoveringFab(false)}
+                aria-label="Abrir chat con Ciro"
+                className={`group relative w-16 h-16 rounded-full shadow-xl hover:shadow-2xl
+                            bg-gold overflow-hidden ring-2 ring-white/40
+                            ${attentionActive ? "animate-attention-pulse" : ""}
+                            transition-transform duration-200 ease-out`}
                 style={{
                   transform: hoveringFab
-                    ? `translate(${headTilt.x * 0.4}px, ${headTilt.y * 0.3}px)`
+                    ? `scale(1.1) rotate(${-headTilt.x * 0.6}deg)`
                     : undefined,
                 }}
               >
-                <VideoBuho />
-              </div>
-            </button>
+                <div
+                  className="absolute inset-0 transition-transform duration-150 ease-out"
+                  style={{
+                    transform: hoveringFab
+                      ? `translate(${headTilt.x * 0.4}px, ${headTilt.y * 0.3}px)`
+                      : undefined,
+                  }}
+                >
+                  <VideoBuho />
+                </div>
+              </button>
+              {/* Hide widget for this session. Aparece siempre al lado del FAB. */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (typeof window !== "undefined") {
+                    sessionStorage.setItem("np_widget_hidden", "1");
+                  }
+                  setWidgetHidden(true);
+                  setShowHint(false);
+                }}
+                aria-label="Ocultar asistente por esta sesión"
+                title="Ocultar (puedes volver a verlo recargando la página)"
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-navy text-white text-xs
+                           flex items-center justify-center shadow-md hover:bg-navy-dark
+                           transition-colors ring-2 ring-white/80"
+              >
+                ×
+              </button>
+            </div>
           </div>
         </div>
       )}
