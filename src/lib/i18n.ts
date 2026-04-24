@@ -46,7 +46,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Home
     "home.badge": "Agente Certificada y Aceptada por el IRS",
     "home.hero.title": "3-1 Notary A Plus",
-    "home.hero.subtitle": "Business & Tax Services",
+    "home.hero.subtitle": "Servicios de Taxes y Negocios",
     "home.hero.owner": "por",
     "home.hero.desc": " sirviendo a nuestra comunidad con dedicación y profesionalismo. Taxes, Notaría, Inmigración y más.",
     "home.hero.years": "15 años",
