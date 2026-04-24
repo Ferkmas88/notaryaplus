@@ -540,10 +540,10 @@ const translations: Record<Lang, Record<string, string>> = {
     // Legal — UPL disclaimer (Unauthorized Practice of Law)
     "legal.upl.title": "Aviso legal importante — No somos abogados",
     "legal.upl.body":
-      "3-1 Notary A Plus ofrece servicios de notarización (notary public) y preparación de documentos. NO somos abogados y NO brindamos asesoría legal. El término 'Notario Público' en Estados Unidos se refiere a un 'notary public' y NO tiene el mismo significado que en Latinoamérica, donde un 'notario' es un abogado con licencia. Para asesoría legal, consulte con un abogado autorizado en Kentucky.",
+      "3-1 Notary A Plus ofrece servicios de notarización (notary public) y preparación de documentos. NO somos abogados y NO brindamos asesoría legal. El término 'Notario Público' en Estados Unidos se refiere a un 'notary public' y NO tiene el mismo significado que en Latinoamérica, donde un 'notario' es un abogado con licencia. Cada caso migratorio es distinto y las leyes de inmigración cambian con frecuencia — NO podemos garantizar resultados de ningún trámite. Para asesoría legal específica sobre su caso, consulte con un abogado de inmigración autorizado en Kentucky.",
     "legal.upl.shortTitle": "No somos abogados",
     "legal.upl.short":
-      "Ofrecemos servicios de notary public y preparación de documentos. No brindamos asesoría legal. Para asesoría legal, consulte con un abogado autorizado en Kentucky.",
+      "Ofrecemos servicios de notary public y preparación de documentos. No brindamos asesoría legal. Cada caso es distinto y no garantizamos resultados. Para asesoría legal, consulte con un abogado autorizado en Kentucky.",
     "legal.footer.note": "No somos abogados.",
     "legal.footer.link": "Leer disclaimer completo",
 
@@ -1091,10 +1091,10 @@ const translations: Record<Lang, Record<string, string>> = {
     // Legal — UPL disclaimer (Unauthorized Practice of Law)
     "legal.upl.title": "Important legal notice — We are not attorneys",
     "legal.upl.body":
-      "3-1 Notary A Plus provides notary public and document preparation services. We are NOT attorneys and do NOT provide legal advice. The term 'Notario Público' in the United States refers to a notary public and does not have the same meaning as in Latin American countries, where a 'notario' is a licensed attorney. For legal advice, consult a licensed Kentucky attorney.",
+      "3-1 Notary A Plus provides notary public and document preparation services. We are NOT attorneys and do NOT provide legal advice. The term 'Notario Público' in the United States refers to a notary public and does not have the same meaning as in Latin American countries, where a 'notario' is a licensed attorney. Every immigration case is different and immigration law changes frequently — we cannot guarantee outcomes for any filing. For legal advice specific to your case, consult a licensed Kentucky immigration attorney.",
     "legal.upl.shortTitle": "We are not attorneys",
     "legal.upl.short":
-      "We provide notary public and document preparation services. We do not provide legal advice. For legal advice, consult a licensed Kentucky attorney.",
+      "We provide notary public and document preparation services. We do not provide legal advice. Every case is different and results are not guaranteed. For legal advice, consult a licensed Kentucky attorney.",
     "legal.footer.note": "We are not attorneys.",
     "legal.footer.link": "Read full disclaimer",
 
