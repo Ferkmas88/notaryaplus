@@ -210,3 +210,13 @@ Una de estas tres (con la primera basta):
 3. **Fallback OAuth temporal**: `citas.php` tiene fallback al OAuth viejo si el JSON del SA no se encuentra. Permitió hacer deploy antes de que el JSON estuviera en Hostinger sin romper producción. Ahora que el JSON está en el servidor, el fallback nunca se activa, pero se deja por seguridad.
 4. **Multi-calendar con graceful degradation**: si un calendario en `NOTARY_READ_CALENDAR_IDS` está mal configurado (no compartido, wrong ID, etc.), el código loggea el error vía `error_log` y sigue adelante con los demás. Un calendario roto NO rompe el sistema completo.
 5. **Bot nuevo vs. existente**: se decidió **usar el bot que ya existe** en Railway (`web-production-c32f8.up.railway.app`) en vez de crear uno nuevo con `whatsapp-web.js`.
+
+
+## Token efficiency rules
+## Approach
+- Read existing files before writing. Don't re-read unless changed.
+- Thorough in reasoning, concise in output.
+- Skip files over 100KB unless required.
+- No sycophantic openers or closing fluff.
+- No emojis or em-dashes.
+- Do not guess APIs, versions, flags, commit SHAs, or package names. Verify by reading code or docs before asserting.
