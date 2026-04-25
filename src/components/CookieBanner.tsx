@@ -77,9 +77,9 @@ export default function CookieBanner() {
       role="dialog"
       aria-live="polite"
       aria-label={lang === "es" ? "Aviso de cookies" : "Cookie notice"}
-      className="fixed inset-x-0 bottom-0 z-[100] border-t border-white/10 bg-[#1B3356] text-white shadow-2xl"
+      className="fixed bottom-4 left-4 z-[100] w-[calc(100vw-2rem)] max-w-md rounded-xl border border-white/10 bg-[#1B3356] text-white shadow-2xl"
     >
-      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-5">
+      <div className="px-4 py-4 sm:px-5 sm:py-5">
         {!showCustomize ? (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm leading-relaxed sm:max-w-2xl">
