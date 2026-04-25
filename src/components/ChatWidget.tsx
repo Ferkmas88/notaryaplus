@@ -98,6 +98,7 @@ export default function ChatWidget() {
   const { lang } = useLang();
   const { hydrated: consentHydrated, hasDecided } = useConsent();
   const cookieBannerOpen = consentHydrated && !hasDecided;
+  const [cookieBannerHeight, setCookieBannerHeight] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -171,6 +172,26 @@ export default function ChatWidget() {
     const t = setTimeout(() => setMounted(true), 400);
     return () => clearTimeout(t);
   }, []);
+
+  // Track cookie banner height live so the FAB clears it on any viewport.
+  // Mobile banner can wrap to 4-6 lines + button rows = >16rem.
+  useEffect(() => {
+    if (!cookieBannerOpen) {
+      setCookieBannerHeight(0);
+      return;
+    }
+    const el = document.querySelector<HTMLElement>('[aria-label="Aviso de cookies"], [aria-label="Cookie notice"]');
+    if (!el) return;
+    const update = () => setCookieBannerHeight(el.getBoundingClientRect().height);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [cookieBannerOpen]);
 
   // Hint bubble — two variants that alternate:
   //   simple  → quick greeting ("Hola, soy Ciro. ¿Quieres agendar…?")
@@ -312,7 +333,11 @@ export default function ChatWidget() {
           className="fixed z-[60] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden
                      right-5 w-[calc(100vw-2.5rem)] max-w-[380px] h-[540px] max-h-[calc(100vh-7rem)]
                      animate-slide-up-fade origin-bottom-right transition-[bottom] duration-300 ease-out"
-          style={{ bottom: cookieBannerOpen ? "13rem" : "6rem" }}
+          style={{
+            bottom: cookieBannerOpen
+              ? `calc(${cookieBannerHeight}px + 5rem)`
+              : "6rem",
+          }}
           role="dialog"
           aria-label="Chat con 3-1 Notary A Plus"
         >
@@ -422,7 +447,11 @@ export default function ChatWidget() {
       {!chatOpen && !widgetHidden && (
         <div
           className="fixed right-5 z-[60] flex items-end gap-3 transition-[bottom] duration-300 ease-out"
-          style={{ bottom: cookieBannerOpen ? "11rem" : "1.25rem" }}
+          style={{
+            bottom: cookieBannerOpen
+              ? `calc(${cookieBannerHeight}px + 1rem)`
+              : "1.25rem",
+          }}
         >
           {/* Hint bubble — simple or full variant */}
           {showHint && hintVariant === "simple" && (
