@@ -9,9 +9,10 @@ import { useLang } from "@/contexts/LangContext";
 // vía LangContext, así que respetamos el toggle actual.
 const T = {
   es: {
+    title: "Usamos cookies",
     message:
-      "Usamos cookies para mejorar tu experiencia y entender cómo usás el sitio. Las cookies necesarias son obligatorias; las de análisis y marketing son opcionales.",
-    policy: "Ver política de privacidad",
+      "Para mejorar tu experiencia. Las necesarias son obligatorias; análisis y marketing, opcionales.",
+    policy: "Ver política",
     accept: "Aceptar todas",
     reject: "Solo necesarias",
     customize: "Personalizar",
@@ -33,11 +34,12 @@ const T = {
     },
   },
   en: {
+    title: "We use cookies",
     message:
-      "We use cookies to improve your experience and understand how you use the site. Necessary cookies are required; analytics and marketing are optional.",
-    policy: "See privacy policy",
+      "To improve your experience. Necessary cookies are required; analytics and marketing are optional.",
+    policy: "View policy",
     accept: "Accept all",
-    reject: "Necessary only",
+    reject: "Only necessary",
     customize: "Customize",
     save: "Save preferences",
     back: "Back",
@@ -77,48 +79,54 @@ export default function CookieBanner() {
       role="dialog"
       aria-live="polite"
       aria-label={lang === "es" ? "Aviso de cookies" : "Cookie notice"}
-      className="fixed bottom-4 left-4 z-[100] w-[calc(100vw-2rem)] max-w-md rounded-xl border border-white/10 bg-[#1B3356] text-white shadow-2xl"
+      className="fixed bottom-3 left-3 right-3 z-[100] sm:right-auto sm:bottom-4 sm:left-4 sm:w-[22rem] rounded-2xl border border-white/10 bg-[#1B3356] text-white shadow-2xl backdrop-blur-sm animate-slide-up-fade origin-bottom-left"
     >
-      <div className="px-4 py-4 sm:px-5 sm:py-5">
+      <div className="px-4 py-4 sm:px-5 sm:py-4">
         {!showCustomize ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm leading-relaxed sm:max-w-2xl">
-              {t.message}{" "}
-              <Link
-                href="/privacy"
-                className="font-medium text-[#C8A214] underline underline-offset-2 hover:opacity-90"
-              >
-                {t.policy}
-              </Link>
-              .
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowCustomize(true)}
-                className="rounded-md border border-white/40 bg-transparent px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-              >
-                {t.customize}
-              </button>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start gap-2.5">
+              <span className="shrink-0 text-xl leading-none mt-0.5" aria-hidden>🍪</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm leading-tight mb-1">{t.title}</p>
+                <p className="text-xs leading-relaxed text-white/80">
+                  {t.message}{" "}
+                  <Link
+                    href="/privacy"
+                    className="font-medium text-[#C8A214] underline underline-offset-2 hover:opacity-90"
+                  >
+                    {t.policy}
+                  </Link>
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={acceptAll}
+              className="w-full rounded-lg bg-[#C8A214] px-4 py-2.5 text-sm font-bold text-[#1B3356] transition hover:brightness-110 shadow-sm"
+            >
+              {t.accept}
+            </button>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={rejectAll}
-                className="rounded-md border border-white/40 bg-transparent px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+                className="flex-1 rounded-lg border border-white/25 bg-white/5 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/10"
               >
                 {t.reject}
               </button>
               <button
                 type="button"
-                onClick={acceptAll}
-                className="rounded-md bg-[#C8A214] px-4 py-2 text-sm font-semibold text-[#1B3356] transition hover:brightness-110"
+                onClick={() => setShowCustomize(true)}
+                className="flex-1 rounded-lg border border-white/25 bg-white/5 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/10"
               >
-                {t.accept}
+                {t.customize}
               </button>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="grid gap-3 sm:grid-cols-3">
+          <div className="flex flex-col gap-3">
+            <p className="font-semibold text-sm">{lang === "es" ? "Tus preferencias" : "Your preferences"}</p>
+            <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
               <CategoryRow
                 title={t.cats.necessary.title}
                 desc={t.cats.necessary.desc}
