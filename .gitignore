@@ -54,3 +54,6 @@ public/backend/admin/admin-config.php
 
 # Backup FTP — contiene secretos, no commitear nunca
 _hostinger_backup/
+
+cookie-mobile*.png
+.playwright-mcp/
