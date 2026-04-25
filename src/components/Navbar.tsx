@@ -118,13 +118,13 @@ export default function Navbar() {
             <div className="flex items-center gap-1 mr-1">
               <button
                 onClick={() => setLang("es")}
-                className={`text-xs px-2.5 py-1 rounded font-bold transition-colors ${lang === "es" ? "bg-gold text-white" : "text-gray-400 border border-gray-500"}`}
+                className={`text-xs min-h-[44px] min-w-[44px] inline-flex items-center justify-center px-2.5 rounded font-bold transition-colors ${lang === "es" ? "bg-gold text-white" : "text-gray-400 border border-gray-500"}`}
               >
                 ES
               </button>
               <button
                 onClick={() => setLang("en")}
-                className={`text-xs px-2.5 py-1 rounded font-bold transition-colors ${lang === "en" ? "bg-gold text-white" : "text-gray-400 border border-gray-500"}`}
+                className={`text-xs min-h-[44px] min-w-[44px] inline-flex items-center justify-center px-2.5 rounded font-bold transition-colors ${lang === "en" ? "bg-gold text-white" : "text-gray-400 border border-gray-500"}`}
               >
                 EN
               </button>
@@ -132,7 +132,7 @@ export default function Navbar() {
             {/* Hamburger */}
             <button
               onClick={() => setOpen(!open)}
-              className="text-white p-2"
+              className="text-white p-2.5 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
               aria-label="Menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

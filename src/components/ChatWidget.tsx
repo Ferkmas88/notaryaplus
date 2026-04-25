@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import VideoBuho from "./VideoBuho";
 import { useLang } from "@/contexts/LangContext";
+import { useConsent } from "@/components/ConsentProvider";
 import { t } from "@/lib/i18n";
 
 const BOT_URL = "https://web-production-c32f8.up.railway.app/chat";
@@ -95,6 +96,10 @@ function renderBold(text: string, keyBase: string): React.ReactNode {
 
 export default function ChatWidget() {
   const { lang } = useLang();
+  // Gate the hint bubble until the user has dismissed/accepted the cookie
+  // banner so two popups never share the screen.
+  const { hydrated: consentHydrated, hasDecided } = useConsent();
+  const cookieBannerOpen = consentHydrated && !hasDecided;
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -176,6 +181,7 @@ export default function ChatWidget() {
   // other variant. Dismissing with × or opening the chat stops the loop.
   useEffect(() => {
     if (hintDismissed) return;
+    if (cookieBannerOpen) return;
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
     // Initial: simple variant at 4s, visible 10s.
@@ -199,7 +205,7 @@ export default function ChatWidget() {
       timeouts.forEach(clearTimeout);
       clearInterval(loop);
     };
-  }, [hintDismissed]);
+  }, [hintDismissed, cookieBannerOpen]);
 
   // Attention pulse kicks in after 25s of chat-closed idle, repeats every
   // 40s to nudge users back without being annoying. Stops on first open.

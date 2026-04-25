@@ -36,7 +36,7 @@ export default function Footer() {
                 href="https://www.facebook.com/groups/828107437233604"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 bg-navy rounded-full flex items-center justify-center hover:bg-gold transition-colors"
+                className="w-11 h-11 bg-navy rounded-full flex items-center justify-center hover:bg-gold transition-colors"
                 aria-label="Facebook"
               >
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -47,7 +47,7 @@ export default function Footer() {
                 href="https://www.instagram.com/myrna.chacon.1/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 bg-navy rounded-full flex items-center justify-center hover:bg-gold transition-colors"
+                className="w-11 h-11 bg-navy rounded-full flex items-center justify-center hover:bg-gold transition-colors"
                 aria-label="Instagram"
               >
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -63,12 +63,12 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">{t("footer.services", lang)}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/taxes" className="hover:text-gold transition-colors">{t("footer.services.taxes", lang)}</Link></li>
-              <li><Link href="/notaria" className="hover:text-gold transition-colors">{t("footer.services.notaria", lang)}</Link></li>
-              <li><Link href="/inmigracion" className="hover:text-gold transition-colors">{t("footer.services.inmigracion", lang)}</Link></li>
-              <li><Link href="/negocios" className="hover:text-gold transition-colors">{t("footer.services.negocios", lang)}</Link></li>
-              <li><Link href="/traducciones" className="hover:text-gold transition-colors">{t("footer.services.traducciones", lang)}</Link></li>
-              <li><Link href="/taxes" className="hover:text-gold transition-colors">{t("footer.services.camioneros", lang)}</Link></li>
+              <li><Link href="/taxes" className="block py-2 hover:text-gold transition-colors">{t("footer.services.taxes", lang)}</Link></li>
+              <li><Link href="/notaria" className="block py-2 hover:text-gold transition-colors">{t("footer.services.notaria", lang)}</Link></li>
+              <li><Link href="/inmigracion" className="block py-2 hover:text-gold transition-colors">{t("footer.services.inmigracion", lang)}</Link></li>
+              <li><Link href="/negocios" className="block py-2 hover:text-gold transition-colors">{t("footer.services.negocios", lang)}</Link></li>
+              <li><Link href="/traducciones" className="block py-2 hover:text-gold transition-colors">{t("footer.services.traducciones", lang)}</Link></li>
+              <li><Link href="/taxes" className="block py-2 hover:text-gold transition-colors">{t("footer.services.camioneros", lang)}</Link></li>
             </ul>
           </div>
 
@@ -76,9 +76,9 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">{t("footer.info", lang)}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-gold transition-colors">{t("footer.info.inicio", lang)}</Link></li>
-              <li><Link href="/contacto" className="hover:text-gold transition-colors">{t("footer.info.contacto", lang)}</Link></li>
-              <li><Link href="/citas" className="hover:text-gold transition-colors">{t("footer.info.citas", lang)}</Link></li>
+              <li><Link href="/" className="block py-2 hover:text-gold transition-colors">{t("footer.info.inicio", lang)}</Link></li>
+              <li><Link href="/contacto" className="block py-2 hover:text-gold transition-colors">{t("footer.info.contacto", lang)}</Link></li>
+              <li><Link href="/citas" className="block py-2 hover:text-gold transition-colors">{t("footer.info.citas", lang)}</Link></li>
             </ul>
             <div className="mt-6">
               <h4 className="text-white font-semibold mb-3 text-sm uppercase tracking-wider">{t("footer.horario", lang)}</h4>
@@ -131,17 +131,17 @@ export default function Footer() {
             </Link>
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            <Link href="/privacy" className="hover:text-gold transition-colors">
+            <Link href="/privacy" className="block py-2 hover:text-gold transition-colors">
               {lang === "es" ? "Política de Privacidad" : "Privacy Policy"}
             </Link>
-            <Link href="/terms" className="hover:text-gold transition-colors">
+            <Link href="/terms" className="block py-2 hover:text-gold transition-colors">
               {lang === "es" ? "Términos de Servicio" : "Terms of Service"}
             </Link>
           </div>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
             <p>&copy; {new Date().getFullYear()} 3-1 Notary A Plus. {t("footer.rights", lang)}</p>
             <p>{t("footer.agent", lang)}</p>
-            <p>Sitio web por <a href="https://www.digitalamwebsites.com" target="_blank" rel="noopener" className="hover:text-gold transition-colors">Digital AM</a></p>
+            <p>Sitio web por <a href="https://www.digitalamwebsites.com" target="_blank" rel="noopener" className="block py-2 hover:text-gold transition-colors">Digital AM</a></p>
           </div>
         </div>
       </div>
