@@ -195,12 +195,40 @@ function gcalCreateEvent($appt, $token, $serviceLabels, $calendarId = null, $col
     $label   = $serviceLabels[$appt['service']] ?? $appt['service'];
     $endHour = sprintf('%02d', (int)substr($appt['time'], 0, 2) + 1);
     $endMin  = substr($appt['time'], 3, 2);
-    $desc    = "ID: {$appt['id']}";
+
+    // Title format matches what Myrna and staff write manually:
+    //   "Nombre Apellido - 502-403-4307 - SERVICIO"
+    // No hour in the title (the calendar slot already shows it). Service in
+    // ALL CAPS like the manual entries ("CREAR PARTNERSHIP", "TAXES", etc.).
+    $name      = trim((string)($appt['name']  ?? ''));
+    $phoneRaw  = trim((string)($appt['phone'] ?? ''));
+    $phoneFmt  = formatPhone($phoneRaw);
+    $labelUp   = mb_strtoupper($label, 'UTF-8');
+    $titleParts = [];
+    if ($name !== '')     $titleParts[] = $name;
+    if ($phoneFmt !== '') $titleParts[] = $phoneFmt;
+    $titleParts[] = $labelUp;
+    $summary = implode(' - ', $titleParts);
+
+    // Description: fixed key-value layout for stable parsing later. Empty
+    // fields are kept (with "Sin notas" / "—") so the line set is stable.
+    $emailVal = trim((string)($appt['email'] ?? ''));
+    $notesVal = trim((string)($appt['notes'] ?? ''));
+    $descLines = [
+        'Cliente: '   . ($name      !== '' ? $name      : '—'),
+        'Teléfono: '  . ($phoneFmt  !== '' ? $phoneFmt  : '—'),
+        'Email: '     . ($emailVal  !== '' ? $emailVal  : '—'),
+        'Servicio: '  . $label,
+        'Notas: '     . ($notesVal  !== '' ? $notesVal  : 'Sin notas'),
+        'ID: '        . ($appt['id'] ?? ''),
+    ];
     if (!empty($appt['createdBy'])) {
-        $desc .= "\nCreado por: {$appt['createdBy']}";
+        $descLines[] = 'Creado por: ' . $appt['createdBy'];
     }
-    $event   = [
-        'summary'     => "Cita Reservada — {$label}",
+    $desc = implode("\n", $descLines);
+
+    $event = [
+        'summary'     => $summary,
         'description' => $desc,
         'start' => ['dateTime' => $appt['date'] . 'T' . $appt['time'] . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
         'end'   => ['dateTime' => $appt['date'] . 'T' . $endHour . ':' . $endMin . ':00', 'timeZone' => 'America/Kentucky/Louisville'],
@@ -217,6 +245,20 @@ function gcalCreateEvent($appt, $token, $serviceLabels, $calendarId = null, $col
     }
     $url = 'https://www.googleapis.com/calendar/v3/calendars/' . urlencode($calId) . '/events';
     curlPost($url, ['Content-Type: application/json', "Authorization: Bearer $token"], json_encode($event));
+}
+
+// Normalize a phone string to "XXX-XXX-XXXX" so web bookings match the format
+// Myrna and staff use when writing event titles by hand. Falls back to the
+// raw input if the digit count is unexpected (international, etc).
+function formatPhone($raw) {
+    $digits = preg_replace('/\D/', '', (string)$raw);
+    if (strlen($digits) === 10) {
+        return substr($digits, 0, 3) . '-' . substr($digits, 3, 3) . '-' . substr($digits, 6);
+    }
+    if (strlen($digits) === 11 && $digits[0] === '1') {
+        return substr($digits, 1, 3) . '-' . substr($digits, 4, 3) . '-' . substr($digits, 7);
+    }
+    return $raw;
 }
 
 // ─── File helpers ─────────────────────────────────────────────────────────────
