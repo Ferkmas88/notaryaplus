@@ -33,7 +33,12 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./out/
-          server-dir: /public_html/
+          # Probing the real docroot: domain may be served from a domain-scoped
+          # folder instead of account-root /public_html/. dangerous-clean-slate
+          # stays false (default) so this first run only ADDS files — nothing is
+          # deleted if the path is wrong. Revert/clean up in a follow-up commit.
+          server-dir: /domains/notaryaplus.com/public_html/
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**
