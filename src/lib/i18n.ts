@@ -555,6 +555,21 @@ const translations: Record<Lang, Record<string, string>> = {
     // Chat — aviso de LLM
     "chat.llmNotice":
       "Este chat usa IA (Anthropic). Las conversaciones se procesan en servidores externos. No compartas información sensible (SSN, pasaporte, datos financieros).",
+    "chat.subtitle": "Asistente de Myrna · En línea",
+    "chat.greeting":
+      "¡Hola, vecino! 🦉 Soy Ciro, el asistente de la oficina de Myrna. " +
+      "Dime en qué te puedo ayudar — taxes, notaría, inmigración, negocios, traducciones, camioneros… " +
+      "Aquí estamos para servirte.",
+    "chat.inputPlaceholder": "Escribe tu mensaje…",
+    "chat.hintSimple": "Hola, soy Ciro. ¿Quieres agendar o tienes una pregunta?",
+    "chat.hintFullTitle": "¿En qué te puedo ayudar?",
+    "chat.hintBook": "Agendar cita ahora",
+    "chat.hintNotarize": "Notarizar documento",
+    "chat.hintQuestion": "Solo tengo una pregunta",
+    "chat.errorProcessing":
+      "Perdón, no pude procesar eso. Intenta de nuevo o escríbenos por WhatsApp.",
+    "chat.errorConnection":
+      "Hubo un problema de conexión. Intenta de nuevo o escríbenos por WhatsApp.",
   },
 
   en: {
@@ -1106,5 +1121,20 @@ const translations: Record<Lang, Record<string, string>> = {
     // Chat — LLM notice
     "chat.llmNotice":
       "This chat uses AI (Anthropic). Conversations are processed on external servers. Do not share sensitive info (SSN, passport, financial data).",
+    "chat.subtitle": "Myrna's assistant · Online",
+    "chat.greeting":
+      "Hi neighbor! 🦉 I'm Ciro, Myrna's office assistant. " +
+      "Tell me how I can help — taxes, notary, immigration, business, translations, truckers… " +
+      "We're here to serve you.",
+    "chat.inputPlaceholder": "Type your message…",
+    "chat.hintSimple": "Hi, I'm Ciro. Want to book an appointment or have a question?",
+    "chat.hintFullTitle": "How can I help you?",
+    "chat.hintBook": "Book appointment now",
+    "chat.hintNotarize": "Notarize a document",
+    "chat.hintQuestion": "I just have a question",
+    "chat.errorProcessing":
+      "Sorry, I couldn't process that. Try again or message us on WhatsApp.",
+    "chat.errorConnection":
+      "There was a connection problem. Try again or message us on WhatsApp.",
   },
 };

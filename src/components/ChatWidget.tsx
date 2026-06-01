@@ -126,20 +126,9 @@ export default function ChatWidget() {
   const fabRef = useRef<HTMLButtonElement>(null);
   const hasInteractedRef = useRef(false);
 
-  // Greeting appears the first time the chat panel opens.
-  useEffect(() => {
-    if (chatOpen && messages.length === 0) {
-      setMessages([
-        {
-          role: "bot",
-          text:
-            "¡Hola, vecino! 🦉 Soy Ciro, el asistente de la oficina de Myrna. " +
-            "Dime en qué te puedo ayudar — taxes, notaría, inmigración, negocios, traducciones, camioneros… " +
-            "Aquí estamos para servirte.",
-        },
-      ]);
-    }
-  }, [chatOpen, messages.length]);
+  // Greeting is resolved at render time (see `displayMessages` below) so it
+  // re-translates instantly when the visitor toggles ES/EN — even with the
+  // chat already open — and is never stored in mutable state.
 
   // Auto-scroll to the latest message.
   useEffect(() => {
@@ -271,9 +260,7 @@ export default function ChatWidget() {
         ...m,
         {
           role: "bot",
-          text:
-            reply ||
-            "Perdón, no pude procesar eso. Intenta de nuevo o escríbenos por WhatsApp.",
+          text: reply || t("chat.errorProcessing", lang),
         },
       ]);
       setWiggleKey((k) => k + 1);
@@ -282,8 +269,7 @@ export default function ChatWidget() {
         ...m,
         {
           role: "bot",
-          text:
-            "Hubo un problema de conexión. Intenta de nuevo o escríbenos por WhatsApp.",
+          text: t("chat.errorConnection", lang),
         },
       ]);
       setWiggleKey((k) => k + 1);
@@ -309,6 +295,13 @@ export default function ChatWidget() {
     // Wait a tick for chatOpen effect to run (greeting + focus) before sending.
     setTimeout(() => sendText(text), 250);
   }
+
+  // Greeting bubble is prepended at render time so it always reflects the
+  // active language. Real conversation messages follow it.
+  const displayMessages: ChatMessage[] = [
+    { role: "bot", text: t("chat.greeting", lang) },
+    ...messages,
+  ];
 
   return (
     <>
@@ -339,7 +332,7 @@ export default function ChatWidget() {
               >
                 Ciro
               </p>
-              <p className="text-mint text-xs truncate">Asistente de Myrna · En línea</p>
+              <p className="text-mint text-xs truncate">{t("chat.subtitle", lang)}</p>
             </div>
             <button
               onClick={() => setChatOpen(false)}
@@ -362,7 +355,7 @@ export default function ChatWidget() {
             ref={scrollRef}
             className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-mint-light/40"
           >
-            {messages.map((m, i) => (
+            {displayMessages.map((m, i) => (
               <div
                 key={i}
                 className={`flex items-end gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
@@ -405,7 +398,7 @@ export default function ChatWidget() {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Escribe tu mensaje…"
+              placeholder={t("chat.inputPlaceholder", lang)}
               disabled={sending}
               className="flex-1 rounded-full border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold disabled:opacity-60"
             />
@@ -451,7 +444,7 @@ export default function ChatWidget() {
               >
                 ×
               </span>
-              Hola, soy Ciro. ¿Quieres agendar o tienes una pregunta?
+              {t("chat.hintSimple", lang)}
               <span className="absolute bottom-0 -right-1.5 w-3 h-3 bg-white border-r border-b border-gold/30 rotate-45 translate-y-1" />
             </button>
           )}
@@ -472,7 +465,7 @@ export default function ChatWidget() {
                 ×
               </button>
               <p className="text-sm font-semibold mb-2.5 leading-snug">
-                ¿En qué te puedo ayudar?
+                {t("chat.hintFullTitle", lang)}
               </p>
               <div className="flex flex-col gap-1.5">
                 <button
@@ -481,7 +474,7 @@ export default function ChatWidget() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gold text-navy font-semibold text-sm hover:bg-gold-light transition-colors text-left"
                 >
                   <span>📅</span>
-                  <span>Agendar cita ahora</span>
+                  <span>{t("chat.hintBook", lang)}</span>
                 </button>
                 <button
                   type="button"
@@ -489,7 +482,7 @@ export default function ChatWidget() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-mint text-navy font-medium text-sm hover:bg-mint-dark transition-colors text-left"
                 >
                   <span>📄</span>
-                  <span>Notarizar documento</span>
+                  <span>{t("chat.hintNotarize", lang)}</span>
                 </button>
                 <button
                   type="button"
@@ -502,7 +495,7 @@ export default function ChatWidget() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-navy font-medium text-sm hover:bg-gray-200 transition-colors text-left"
                 >
                   <span>❓</span>
-                  <span>Solo tengo una pregunta</span>
+                  <span>{t("chat.hintQuestion", lang)}</span>
                 </button>
               </div>
               <span className="absolute bottom-0 -right-1.5 w-3 h-3 bg-white border-r border-b border-gold/30 rotate-45 translate-y-1" />
