@@ -29,16 +29,17 @@ jobs:
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
+          # ⚠️ STALE SERVER: notaryaplus.com now resolves to 195.35.60.239 /
+          # 191.96.144.60 (Hostinger hcdn) but this FTP host is 145.223.77.154 —
+          # a different/orphaned box. Deploys land here but never reach the live
+          # site (frozen on the 2026-04-19 build). Update `server` (and likely the
+          # FTP_USERNAME/FTP_PASSWORD secrets) with the CURRENT FTP details from
+          # hPanel → Files → FTP Accounts before deploys will go live again.
           server: 145.223.77.154
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./out/
-          # Probing the real docroot: domain may be served from a domain-scoped
-          # folder instead of account-root /public_html/. dangerous-clean-slate
-          # stays false (default) so this first run only ADDS files — nothing is
-          # deleted if the path is wrong. Revert/clean up in a follow-up commit.
-          server-dir: /public_html/notaryaplus.com/
-          dangerous-clean-slate: false
+          server-dir: /public_html/
           exclude: |
             **/.git*
             **/.git*/**
