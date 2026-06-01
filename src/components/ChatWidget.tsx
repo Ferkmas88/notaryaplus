@@ -260,6 +260,9 @@ export default function ChatWidget() {
         body: JSON.stringify({
           session_id: getOrCreateSessionId(),
           message: text,
+          // Pass the website's active language (ES/EN toggle in the Navbar)
+          // so the bot replies in the language the visitor is reading.
+          lang,
         }),
       });
       const data = await res.json();
