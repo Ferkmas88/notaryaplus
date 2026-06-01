@@ -37,7 +37,7 @@ jobs:
           # folder instead of account-root /public_html/. dangerous-clean-slate
           # stays false (default) so this first run only ADDS files — nothing is
           # deleted if the path is wrong. Revert/clean up in a follow-up commit.
-          server-dir: /domains/notaryaplus.com/public_html/
+          server-dir: /public_html/notaryaplus.com/
           dangerous-clean-slate: false
           exclude: |
             **/.git*
