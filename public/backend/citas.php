@@ -65,6 +65,7 @@ $SERVICE_LABELS = [
     'taxes_negocio'     => 'Taxes de Negocio / Corporación',
     'taxes_camionero'   => 'Trámites para Camioneros (IRP/IFTA/KYU)',
     'notaria'           => 'Notaría Pública',
+    'divorcio_mutuo'    => 'Divorcio de Mutuo Acuerdo',
     'inmigracion'       => 'Inmigración / Formularios',
     'ciudadania'        => 'Clases de Ciudadanía',
     'pasaporte'         => 'Pasaporte Cubano/Americano',

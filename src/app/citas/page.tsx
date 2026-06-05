@@ -61,6 +61,7 @@ export default function CitasPage() {
     { value: "taxes_negocio", label: t("citas.svc.taxes_negocio", lang) },
     { value: "taxes_camionero", label: t("citas.svc.taxes_camionero", lang) },
     { value: "notaria", label: t("citas.svc.notaria", lang) },
+    { value: "divorcio_mutuo", label: t("citas.svc.divorcio_mutuo", lang) },
     { value: "inmigracion", label: t("citas.svc.inmigracion", lang) },
     { value: "ciudadania", label: t("citas.svc.ciudadania", lang) },
     { value: "pasaporte", label: t("citas.svc.pasaporte", lang) },

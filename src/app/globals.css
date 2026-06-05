@@ -22,11 +22,23 @@
 
 html {
   scroll-behavior: smooth;
+  /* Mobile-first: 17px base so all Tailwind text-* utilities scale up
+     proportionally on phones for readability. Reverts to 16px at md
+     (768px) so desktop layouts stay tight. */
+  font-size: 17px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
 }
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
   color: #1a1a2e;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4 {

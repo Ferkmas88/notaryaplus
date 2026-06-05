@@ -27,6 +27,15 @@ export default function ServiciosPage() {
       ],
     },
     {
+      href: "/citas",
+      color: "bg-rose-50 border-rose-200",
+      titleKey: "servicios.divorcio.title",
+      items: [
+        t("servicios.divorcio.i1", lang), t("servicios.divorcio.i2", lang), t("servicios.divorcio.i3", lang),
+        t("servicios.divorcio.i4", lang), t("servicios.divorcio.i5", lang),
+      ],
+    },
+    {
       href: "/inmigracion",
       color: "bg-green-50 border-green-200",
       titleKey: "servicios.inmigracion.title",
