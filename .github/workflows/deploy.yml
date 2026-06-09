@@ -43,6 +43,13 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
-            backend/**
-            backend
+            backend/google-config.php
+            backend/service-account.json
+            backend/admin/admin-config.php
+            backend/appointments.json
+            backend/rate-limit.json
+            backend/auth.php
+            backend/gcal-debug.php
+            backend/cache/**
+            backend/cache
             .ftp-deploy-sync-state.json
