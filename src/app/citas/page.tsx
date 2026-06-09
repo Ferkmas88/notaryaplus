@@ -139,31 +139,35 @@ export default function CitasPage() {
 
     const nowHour = new Date().getHours();
     const todayStrLocal = getMinDate();
+    const daysToFetchSet = new Set(daysToFetch);
 
-    Promise.all(
-      daysToFetch.map((ds) =>
-        fetch(`${API_BASE}/backend/citas.php?date=${ds}`)
-          .then((r) => r.json())
-          .then((data) => {
-            let slots: string[] = data.availableSlots || [];
-            const booked: string[] = data.bookedTimes || [];
-            if (ds === todayStrLocal) {
-              slots = slots.filter((s) => parseInt(s.split(":")[0]) > nowHour);
-            }
-            const free = slots.filter((s) => !booked.includes(s));
-            const status: DayStatus = free.length > 0 ? "available" : "full";
-            return { ds, status };
-          })
-          .catch(() => ({ ds, status: "unknown" as DayStatus }))
-      )
-    ).then((results) => {
-      if (cancelled) return;
-      const map: Record<string, DayStatus> = {};
-      results.forEach((r) => { map[r.ds] = r.status; });
-      availabilityCache.current[cacheKey] = map;
-      setMonthAvailability(map);
-      setMonthLoading(false);
-    });
+    fetch(`${API_BASE}/backend/citas.php?month=${cacheKey}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const busyByDate: Record<string, string[]> = data?.busyByDate || {};
+        const availableByDate: Record<string, string[]> = data?.availableByDate || {};
+        const map: Record<string, DayStatus> = {};
+        daysToFetchSet.forEach((ds) => {
+          let slots = availableByDate[ds] || [];
+          const booked = busyByDate[ds] || [];
+          if (ds === todayStrLocal) {
+            slots = slots.filter((s) => parseInt(s.split(":")[0]) > nowHour);
+          }
+          const free = slots.filter((s) => !booked.includes(s));
+          map[ds] = free.length > 0 ? "available" : "full";
+        });
+        availabilityCache.current[cacheKey] = map;
+        setMonthAvailability(map);
+        setMonthLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        const map: Record<string, DayStatus> = {};
+        daysToFetchSet.forEach((ds) => { map[ds] = "unknown" as DayStatus; });
+        setMonthAvailability(map);
+        setMonthLoading(false);
+      });
 
     return () => { cancelled = true; };
   }, [viewMonth]);

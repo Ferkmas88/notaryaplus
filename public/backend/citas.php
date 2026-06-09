@@ -219,6 +219,107 @@ function gcalBusySlots($date, $token) {
     return array_values(array_unique($busySlots));
 }
 
+// Bulk variant: one freeBusy.query covering an entire month, sliced into a
+// per-day map of busy hour-slots. Lets the frontend replace 30 parallel
+// per-day requests with a single round-trip — primary cold-load win.
+// Returns ['YYYY-MM-DD' => ['10:00', '14:00', ...], ...] for every day in
+// the month. Days with no busy slots map to [].
+function gcalBusySlotsMonth($year, $month, $token) {
+    if (!$token) return [];
+
+    $tz       = new DateTimeZone('America/Kentucky/Louisville');
+    $firstDay = new DateTime(sprintf('%04d-%02d-01 00:00:00', $year, $month), $tz);
+    $lastDay  = new DateTime($firstDay->format('Y-m-t') . ' 23:59:59', $tz);
+    $daysInMonth = (int) $lastDay->format('j');
+
+    $items = [];
+    foreach (NOTARY_READ_CALENDAR_IDS as $cid) {
+        $items[] = ['id' => $cid];
+    }
+
+    $body = json_encode([
+        'timeMin'  => $firstDay->format(DateTime::RFC3339),
+        'timeMax'  => $lastDay->format(DateTime::RFC3339),
+        'timeZone' => 'America/Kentucky/Louisville',
+        'items'    => $items,
+    ]);
+    $res = curlPost(
+        'https://www.googleapis.com/calendar/v3/freeBusy',
+        ['Content-Type: application/json', "Authorization: Bearer $token"],
+        $body
+    );
+
+    // Seed the result map with empty arrays so every day in the month is
+    // present in the response even if Google returned nothing for it.
+    $result = [];
+    for ($d = 1; $d <= $daysInMonth; $d++) {
+        $result[sprintf('%04d-%02d-%02d', $year, $month, $d)] = [];
+    }
+
+    if (!$res) return $result;
+    $data = json_decode($res, true);
+
+    $periods = [];
+    foreach (NOTARY_READ_CALENDAR_IDS as $cid) {
+        $calResp = $data['calendars'][$cid] ?? null;
+        if (!$calResp) continue;
+        if (!empty($calResp['errors'])) {
+            error_log('[freeBusy month] ' . $cid . ' error: ' . json_encode($calResp['errors']));
+            continue;
+        }
+        foreach ($calResp['busy'] ?? [] as $p) {
+            $periods[] = $p;
+        }
+    }
+
+    // Slice every busy period into per-day hour slots, dropping anything
+    // outside business hours (10:00–17:59). A multi-day busy period gets
+    // attributed to every day it covers.
+    foreach ($periods as $period) {
+        $start = strtotime($period['start']);
+        $end   = strtotime($period['end']);
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $d);
+            for ($h = 10; $h <= 17; $h++) {
+                $slotDt    = new DateTime($dateStr . sprintf(' %02d:00:00', $h), $tz);
+                $slotStart = $slotDt->getTimestamp();
+                $slotEnd   = $slotStart + 3600;
+                if ($start < $slotEnd && $end > $slotStart) {
+                    $result[$dateStr][] = sprintf('%02d:00', $h);
+                }
+            }
+        }
+    }
+
+    foreach ($result as $d => $slots) {
+        $result[$d] = array_values(array_unique($slots));
+    }
+
+    return $result;
+}
+
+function gcalBusySlotsMonthCached($year, $month, $token, $ttl = 120) {
+    $key       = sprintf('%04d-%02d', (int) $year, (int) $month);
+    $cacheDir  = __DIR__ . '/cache';
+    $cacheFile = $cacheDir . '/freebusy-month-' . $key . '.json';
+    if (is_file($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
+        $data = json_decode(@file_get_contents($cacheFile), true);
+        if (is_array($data)) return $data;
+    }
+    $map = gcalBusySlotsMonth($year, $month, $token);
+    if (!is_dir($cacheDir)) {
+        @mkdir($cacheDir, 0775, true);
+    }
+    @file_put_contents($cacheFile, json_encode($map), LOCK_EX);
+    return $map;
+}
+
+function gcalBusySlotsMonthCacheInvalidate($year, $month) {
+    $key       = sprintf('%04d-%02d', (int) $year, (int) $month);
+    $cacheFile = __DIR__ . '/cache/freebusy-month-' . $key . '.json';
+    if (is_file($cacheFile)) @unlink($cacheFile);
+}
+
 function gcalCreateEvent($appt, $token, $serviceLabels, $calendarId = null, $colorId = null) {
     if (!$token) return;
     $calId   = $calendarId ?: NOTARY_CALENDAR_ID;
@@ -454,6 +555,43 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $contactEmail3, $servi
 
 // ─── GET: slots disponibles ───────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // Batch month endpoint — one Google call returns every busy slot for the
+    // entire month. Used by the calendar grid so we don't fan out 30 parallel
+    // requests on cold load.
+    $month = isset($_GET['month']) ? trim($_GET['month']) : '';
+    if ($month !== '') {
+        if (!preg_match('/^(\d{4})-(\d{2})$/', $month, $m)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Mes inválido']);
+            exit();
+        }
+        $year  = (int) $m[1];
+        $monNo = (int) $m[2];
+        if ($monNo < 1 || $monNo > 12) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Mes inválido']);
+            exit();
+        }
+        $token   = gcalAccessToken();
+        $busyMap = gcalBusySlotsMonthCached($year, $monNo, $token);
+
+        // Per-day available slots so the frontend can compute "fully booked"
+        // without knowing business hours. Sunday is closed → empty array.
+        $availableByDay = [];
+        foreach ($busyMap as $dateStr => $_) {
+            $dow = (int) date('w', strtotime($dateStr . ' 12:00:00'));
+            $availableByDay[$dateStr] = $BUSINESS_HOURS[$dow] ?? [];
+        }
+
+        header('Cache-Control: public, max-age=60, stale-while-revalidate=120');
+        echo json_encode([
+            'month'           => $month,
+            'busyByDate'      => $busyMap,
+            'availableByDate' => $availableByDay,
+        ]);
+        exit();
+    }
+
     $date = isset($_GET['date']) ? trim($_GET['date']) : '';
 
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
@@ -641,6 +779,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gcalColorId = ($adminColorId    !== '') ? $adminColorId    : null;
     try { gcalCreateEvent($newAppt, $gcalToken, $SERVICE_LABELS, $gcalCalId, $gcalColorId); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
     gcalBusySlotsCacheInvalidate($date);
+    [$yyyy, $mm] = explode('-', $date);
+    gcalBusySlotsMonthCacheInvalidate((int) $yyyy, (int) $mm);
     try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $CONTACT_EMAIL3, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 
     exit();
