@@ -129,6 +129,36 @@ function gcalAccessToken($legacyRefreshToken = null) {
     return gcalAccessTokenOAuth($legacyRefreshToken);
 }
 
+// Cached wrapper around gcalBusySlots. Reads /backend/cache/freebusy-YYYY-MM-DD.json
+// if fresh (<= $ttl seconds old), otherwise hits Google and refreshes the cache.
+// Used by GET availability lookups. POST conflict checks bypass cache to avoid
+// stale data causing a double-booking.
+function gcalBusySlotsCached($date, $token, $ttl = 120) {
+    $safeDate  = preg_replace('/[^0-9-]/', '', (string) $date);
+    if ($safeDate === '') return gcalBusySlots($date, $token);
+    $cacheDir  = __DIR__ . '/cache';
+    $cacheFile = $cacheDir . '/freebusy-' . $safeDate . '.json';
+    if (is_file($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
+        $data = json_decode(@file_get_contents($cacheFile), true);
+        if (is_array($data)) return $data;
+    }
+    $slots = gcalBusySlots($date, $token);
+    if (!is_dir($cacheDir)) {
+        @mkdir($cacheDir, 0775, true);
+    }
+    @file_put_contents($cacheFile, json_encode($slots), LOCK_EX);
+    return $slots;
+}
+
+// Invalidate the freeBusy cache for one date. Call after a successful booking
+// or cancellation so the next availability lookup reflects the change.
+function gcalBusySlotsCacheInvalidate($date) {
+    $safeDate  = preg_replace('/[^0-9-]/', '', (string) $date);
+    if ($safeDate === '') return;
+    $cacheFile = __DIR__ . '/cache/freebusy-' . $safeDate . '.json';
+    if (is_file($cacheFile)) @unlink($cacheFile);
+}
+
 function gcalBusySlots($date, $token) {
     if (!$token) return [];
 
@@ -440,8 +470,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // dashboard) but is NEVER consulted here — otherwise stale entries
     // would block real slots even after Myrna cancels in the calendar.
     $token      = gcalAccessToken();
-    $bookedTimes = gcalBusySlots($date, $token);
+    $bookedTimes = gcalBusySlotsCached($date, $token);
 
+    header('Cache-Control: public, max-age=60, stale-while-revalidate=120');
     echo json_encode(['availableSlots' => $availableSlots, 'bookedTimes' => array_values($bookedTimes)]);
     exit();
 }
@@ -609,6 +640,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gcalCalId   = ($adminCalendarId !== '') ? $adminCalendarId : null;
     $gcalColorId = ($adminColorId    !== '') ? $adminColorId    : null;
     try { gcalCreateEvent($newAppt, $gcalToken, $SERVICE_LABELS, $gcalCalId, $gcalColorId); } catch (Exception $e) { error_log('GCal error: ' . $e->getMessage()); }
+    gcalBusySlotsCacheInvalidate($date);
     try { sendEmails($newAppt, $CONTACT_EMAIL, $CONTACT_EMAIL2, $CONTACT_EMAIL3, $SERVICE_LABELS, $DAY_NAMES); } catch (Exception $e) { error_log('Email error: ' . $e->getMessage()); }
 
     exit();

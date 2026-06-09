@@ -31,6 +31,19 @@ function gcalBase64UrlEncode($data) {
 }
 
 function gcalServiceAccountToken($scope = 'https://www.googleapis.com/auth/calendar') {
+    // File-based access token cache. Google access tokens live ~1h. We reuse
+    // a cached token until 60s before expiry so the JWT-sign + token-exchange
+    // round-trip happens at most once per hour instead of once per request.
+    // Scope is part of the cache key so different scopes don't collide.
+    $cacheDir  = __DIR__ . '/cache';
+    $cacheFile = $cacheDir . '/gcal-token-' . substr(sha1($scope), 0, 12) . '.json';
+    if (is_file($cacheFile)) {
+        $cached = json_decode(@file_get_contents($cacheFile), true);
+        if (is_array($cached) && !empty($cached['token']) && ($cached['expires_at'] ?? 0) > time() + 60) {
+            return $cached['token'];
+        }
+    }
+
     $keyPath = gcalServiceAccountKeyPath();
     if (!$keyPath) {
         error_log('[gcal-auth] service-account.json not found in any known location');
@@ -94,5 +107,22 @@ function gcalServiceAccountToken($scope = 'https://www.googleapis.com/auth/calen
     }
 
     $data = json_decode($res, true);
-    return $data['access_token'] ?? null;
+    $accessToken = $data['access_token'] ?? null;
+
+    if ($accessToken) {
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0775, true);
+        }
+        $expiresIn = isset($data['expires_in']) ? (int) $data['expires_in'] : 3600;
+        @file_put_contents(
+            $cacheFile,
+            json_encode([
+                'token'      => $accessToken,
+                'expires_at' => time() + max(60, $expiresIn - 60),
+            ]),
+            LOCK_EX
+        );
+    }
+
+    return $accessToken;
 }

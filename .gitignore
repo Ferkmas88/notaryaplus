@@ -40,6 +40,9 @@ public/backend/gcal-debug.php
 public/backend/service-account.json
 service-account.json
 
+# Runtime cache for Google Calendar token + freeBusy responses
+public/backend/cache/
+
 # Admin panel credentials (upload manually to Hostinger)
 public/backend/admin/admin-config.php
 
