@@ -80,7 +80,12 @@ export default function ServiciosPage() {
       <section className="bg-mint-light py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allServices.map((s) => (
+            {allServices
+              .slice()
+              .sort((a, b) =>
+                t(a.titleKey, lang).localeCompare(t(b.titleKey, lang), lang),
+              )
+              .map((s) => (
               <Link key={s.titleKey} href={s.href} className="group">
                 <div className={`card border ${s.color} h-full group-hover:-translate-y-1 transition-transform`}>
                   <h3 className="text-xl font-bold text-navy mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>

@@ -468,6 +468,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "citas.svc.itin": "Número de ITIN",
     "citas.svc.contabilidad": "Contabilidad y Nóminas",
     "citas.svc.traducciones": "Traducciones Profesionales",
+    "citas.svc.interpretacion": "Interpretación (citas y entrevistas)",
+    "citas.svc.tramites_consulares": "Trámites Consulares",
+    "citas.svc.licencias_permisos": "Licencias y Permisos",
+    "citas.svc.sales_tax": "Taxes de Venta y Locales",
     "citas.svc.otro": "Otro / Consulta General",
 
     // Contacto page
@@ -1042,6 +1046,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "citas.svc.itin": "ITIN Number",
     "citas.svc.contabilidad": "Accounting & Payroll",
     "citas.svc.traducciones": "Professional Translations",
+    "citas.svc.interpretacion": "Interpretation (appointments & interviews)",
+    "citas.svc.tramites_consulares": "Consular Services",
+    "citas.svc.licencias_permisos": "Licenses & Permits",
+    "citas.svc.sales_tax": "Sales & Local Taxes",
     "citas.svc.otro": "Other / General Consultation",
 
     // Contacto page

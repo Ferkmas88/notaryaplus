@@ -57,20 +57,27 @@ export default function CitasPage() {
   const availabilityCache = useRef<Record<string, Record<string, DayStatus>>>({});
 
   const SERVICES = [
+    // Catálogo completo — paridad con el CRM (2026-06-10). Orden
+    // alfabético por label; "Otro" siempre al final.
     { value: "taxes_individual", label: t("citas.svc.taxes_individual", lang) },
     { value: "taxes_negocio", label: t("citas.svc.taxes_negocio", lang) },
+    { value: "sales_tax", label: t("citas.svc.sales_tax", lang) },
     { value: "taxes_camionero", label: t("citas.svc.taxes_camionero", lang) },
     { value: "notaria", label: t("citas.svc.notaria", lang) },
     { value: "divorcio_mutuo", label: t("citas.svc.divorcio_mutuo", lang) },
     { value: "inmigracion", label: t("citas.svc.inmigracion", lang) },
+    { value: "interpretacion", label: t("citas.svc.interpretacion", lang) },
+    { value: "tramites_consulares", label: t("citas.svc.tramites_consulares", lang) },
     { value: "ciudadania", label: t("citas.svc.ciudadania", lang) },
     { value: "pasaporte", label: t("citas.svc.pasaporte", lang) },
     { value: "negocios", label: t("citas.svc.negocios", lang) },
+    { value: "licencias_permisos", label: t("citas.svc.licencias_permisos", lang) },
     { value: "itin", label: t("citas.svc.itin", lang) },
     { value: "contabilidad", label: t("citas.svc.contabilidad", lang) },
     { value: "traducciones", label: t("citas.svc.traducciones", lang) },
-    { value: "otro", label: t("citas.svc.otro", lang) },
-  ];
+  ]
+    .sort((a, b) => a.label.localeCompare(b.label, lang))
+    .concat([{ value: "otro", label: t("citas.svc.otro", lang) }]);
 
   useEffect(() => {
     if (!date) return;

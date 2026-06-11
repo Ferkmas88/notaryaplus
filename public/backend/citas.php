@@ -73,6 +73,10 @@ $SERVICE_LABELS = [
     'itin'              => 'Número de ITIN',
     'contabilidad'      => 'Contabilidad y Nóminas',
     'traducciones'      => 'Traducciones Profesionales',
+    'interpretacion'    => 'Interpretación (citas y entrevistas)',
+    'tramites_consulares' => 'Trámites Consulares',
+    'licencias_permisos' => 'Licencias y Permisos',
+    'sales_tax'         => 'Taxes de Venta y Locales',
     'otro'              => 'Otro / Consulta General',
 ];
 
