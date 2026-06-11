@@ -10,6 +10,17 @@ export default function NotariaPage() {
 
   const notaryServices = [
     {
+      // Divorcio pertenece a Notaría (jerarquía canónica 2026-06-11) —
+      // antes solo aparecía en /servicios y faltaba en esta página.
+      titleKey: "servicios.divorcio.title",
+      descKey: "notaria.divorcio.desc",
+      items: [
+        t("servicios.divorcio.i1", lang), t("servicios.divorcio.i2", lang),
+        t("servicios.divorcio.i3", lang), t("servicios.divorcio.i4", lang),
+        t("servicios.divorcio.i5", lang),
+      ],
+    },
+    {
       titleKey: "notaria.s1.title",
       descKey: "notaria.s1.desc",
       items: [
@@ -86,7 +97,7 @@ export default function NotariaPage() {
           </div>
 
           <div className="space-y-6">
-            {notaryServices.map((service, i) => (
+            {notaryServices.slice().sort((a, b) => t(a.titleKey, lang).localeCompare(t(b.titleKey, lang), lang)).map((service, i) => (
               <div key={service.titleKey} className="card">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 bg-gold text-white rounded-full flex items-center justify-center font-bold text-sm">

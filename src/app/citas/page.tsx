@@ -34,6 +34,8 @@ export default function CitasPage() {
   const { lang } = useLang();
   const [step, setStep] = useState<Step>("service");
   const [service, setService] = useState("");
+  // Nivel 1 del selector: categoría elegida (null = mostrando categorías).
+  const [svcCat, setSvcCat] = useState<string | null>(null);
   const [date, setDate] = useState(getMinDate());
   const [time, setTime] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -56,28 +58,71 @@ export default function CitasPage() {
   const [monthLoading, setMonthLoading] = useState(false);
   const availabilityCache = useRef<Record<string, Record<string, DayStatus>>>({});
 
+  // Selector en 2 niveles — espejo EXACTO del catálogo del CRM
+  // (2026-06-11): primero la categoría (las 6 del menú de la web),
+  // después SUS trámites. Todo alfabético; "Otro" al final.
+  const svc = (key: string) => ({ value: key, label: t(`citas.svc.${key}`, lang) });
+  const byLabel = (a: { label: string }, b: { label: string }) =>
+    a.label.localeCompare(b.label, lang);
+
+  const SERVICE_CATEGORIES = [
+    {
+      key: "taxes",
+      label: t("citas.cat.taxes", lang),
+      services: [
+        svc("taxes_individual"), svc("taxes_negocio"), svc("taxes_1099"),
+        svc("sales_tax"), svc("taxes_camionero"), svc("itin"),
+        svc("irs_carta"), svc("form_2848"),
+      ].sort(byLabel),
+    },
+    {
+      key: "notaria",
+      label: t("citas.cat.notaria", lang),
+      services: [
+        svc("notaria"), svc("apostilla"), svc("poder_notarial"),
+        svc("divorcio_mutuo"), svc("affidavit"), svc("consentimiento_viaje"),
+        svc("consentimiento_medico"), svc("tramites_consulares"),
+      ].sort(byLabel),
+    },
+    {
+      key: "inmigracion",
+      label: t("citas.cat.inmigracion", lang),
+      services: [
+        svc("inmigracion"), svc("ciudadania"), svc("pasaporte"),
+        svc("interpretacion"),
+      ].sort(byLabel),
+    },
+    {
+      key: "negocios",
+      label: t("citas.cat.negocios", lang),
+      services: [svc("negocios"), svc("licencias_permisos")].sort(byLabel),
+    },
+    {
+      key: "traducciones",
+      label: t("citas.cat.traducciones", lang),
+      services: [
+        svc("traduccion_vitales"), svc("traduccion_academica"),
+        svc("traduccion_certificada"),
+      ].sort(byLabel),
+    },
+    {
+      key: "contabilidad",
+      label: t("citas.cat.contabilidad", lang),
+      services: [
+        svc("bookkeeping"), svc("nominas"), svc("asesoria_financiera"),
+      ].sort(byLabel),
+    },
+  ].sort(byLabel);
+
+  const OTRO = svc("otro");
+  // Flat para lookups (resumen, labels) — incluye values legacy de citas
+  // viejas para que el resumen no quede vacío.
   const SERVICES = [
-    // Catálogo completo — paridad con el CRM (2026-06-10). Orden
-    // alfabético por label; "Otro" siempre al final.
-    { value: "taxes_individual", label: t("citas.svc.taxes_individual", lang) },
-    { value: "taxes_negocio", label: t("citas.svc.taxes_negocio", lang) },
-    { value: "sales_tax", label: t("citas.svc.sales_tax", lang) },
-    { value: "taxes_camionero", label: t("citas.svc.taxes_camionero", lang) },
-    { value: "notaria", label: t("citas.svc.notaria", lang) },
-    { value: "divorcio_mutuo", label: t("citas.svc.divorcio_mutuo", lang) },
-    { value: "inmigracion", label: t("citas.svc.inmigracion", lang) },
-    { value: "interpretacion", label: t("citas.svc.interpretacion", lang) },
-    { value: "tramites_consulares", label: t("citas.svc.tramites_consulares", lang) },
-    { value: "ciudadania", label: t("citas.svc.ciudadania", lang) },
-    { value: "pasaporte", label: t("citas.svc.pasaporte", lang) },
-    { value: "negocios", label: t("citas.svc.negocios", lang) },
-    { value: "licencias_permisos", label: t("citas.svc.licencias_permisos", lang) },
-    { value: "itin", label: t("citas.svc.itin", lang) },
-    { value: "contabilidad", label: t("citas.svc.contabilidad", lang) },
-    { value: "traducciones", label: t("citas.svc.traducciones", lang) },
-  ]
-    .sort((a, b) => a.label.localeCompare(b.label, lang))
-    .concat([{ value: "otro", label: t("citas.svc.otro", lang) }]);
+    ...SERVICE_CATEGORIES.flatMap((c) => c.services),
+    OTRO,
+    svc("contabilidad"),
+    svc("traducciones"),
+  ];
 
   useEffect(() => {
     if (!date) return;
@@ -322,21 +367,61 @@ export default function CitasPage() {
               <h2 className="text-2xl font-bold text-navy mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
                 {t("citas.step1.title", lang)}
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {SERVICES.map((s) => (
+              {!svcCat ? (
+                /* Nivel 1: categorías (espejo del menú de la web) */
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {SERVICE_CATEGORIES.map((c) => (
+                    <button
+                      key={c.key}
+                      onClick={() => setSvcCat(c.key)}
+                      className="text-left p-4 rounded-xl border-2 border-gray-200 bg-white hover:border-gold hover:bg-gold/5 transition-all"
+                    >
+                      <span className="text-sm font-bold text-navy">{c.label}</span>
+                      <span className="block mt-0.5 text-xs text-gray-500">
+                        {c.services.length} {lang === "es" ? "servicios" : "services"} →
+                      </span>
+                    </button>
+                  ))}
                   <button
-                    key={s.value}
-                    onClick={() => { setService(s.value); setStep("datetime"); }}
+                    onClick={() => { setService(OTRO.value); setStep("datetime"); }}
                     className={`text-left p-4 rounded-xl border-2 transition-all text-sm font-medium
-                      ${service === s.value
+                      ${service === OTRO.value
                         ? "border-gold bg-gold/10 text-navy"
                         : "border-gray-200 bg-white hover:border-gold hover:bg-gold/5 text-gray-700"
                       }`}
                   >
-                    {s.label}
+                    {OTRO.label}
                   </button>
-                ))}
-              </div>
+                </div>
+              ) : (
+                /* Nivel 2: trámites de la categoría elegida */
+                <div>
+                  <button
+                    onClick={() => setSvcCat(null)}
+                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-navy mb-4 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    {lang === "es" ? "Categorías" : "Categories"}
+                  </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {SERVICE_CATEGORIES.find((c) => c.key === svcCat)?.services.map((s) => (
+                      <button
+                        key={s.value}
+                        onClick={() => { setService(s.value); setStep("datetime"); }}
+                        className={`text-left p-4 rounded-xl border-2 transition-all text-sm font-medium
+                          ${service === s.value
+                            ? "border-gold bg-gold/10 text-navy"
+                            : "border-gray-200 bg-white hover:border-gold hover:bg-gold/5 text-gray-700"
+                          }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

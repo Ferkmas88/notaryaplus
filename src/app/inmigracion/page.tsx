@@ -81,7 +81,7 @@ export default function InmigracionPage() {
       <section className="bg-mint-light py-10 pb-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="space-y-6">
-            {immigrationServices.map((service, i) => (
+            {immigrationServices.slice().sort((a, b) => t(a.titleKey, lang).localeCompare(t(b.titleKey, lang), lang)).map((service, i) => (
               <div key={service.titleKey} className="card">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 bg-gold text-white rounded-full flex items-center justify-center font-bold text-sm shrink-0">
