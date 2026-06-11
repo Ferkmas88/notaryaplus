@@ -11,14 +11,20 @@ export default function Navbar() {
   const pathname = usePathname();
   const { lang, setLang } = useLang();
 
-  const links = [
-    { href: "/", label: t("nav.inicio", lang) },
+  // Servicios en orden alfabético (misma regla que /citas y el CRM,
+  // 2026-06-11). Inicio primero, Contacto al final.
+  const serviceLinks = [
     { href: "/taxes", label: t("nav.taxes", lang) },
     { href: "/notaria", label: t("nav.notaria", lang) },
     { href: "/inmigracion", label: t("nav.inmigracion", lang) },
     { href: "/negocios", label: t("nav.negocios", lang) },
     { href: "/traducciones", label: t("nav.traducciones", lang) },
     { href: "/contabilidad", label: t("nav.contabilidad", lang) },
+  ].sort((a, b) => a.label.localeCompare(b.label, lang));
+
+  const links = [
+    { href: "/", label: t("nav.inicio", lang) },
+    ...serviceLinks,
     { href: "/contacto", label: t("nav.contacto", lang) },
   ];
 

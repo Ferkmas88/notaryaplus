@@ -63,12 +63,23 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">{t("footer.services", lang)}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/taxes" className="block py-2 hover:text-gold transition-colors">{t("footer.services.taxes", lang)}</Link></li>
-              <li><Link href="/notaria" className="block py-2 hover:text-gold transition-colors">{t("footer.services.notaria", lang)}</Link></li>
-              <li><Link href="/inmigracion" className="block py-2 hover:text-gold transition-colors">{t("footer.services.inmigracion", lang)}</Link></li>
-              <li><Link href="/negocios" className="block py-2 hover:text-gold transition-colors">{t("footer.services.negocios", lang)}</Link></li>
-              <li><Link href="/traducciones" className="block py-2 hover:text-gold transition-colors">{t("footer.services.traducciones", lang)}</Link></li>
-              <li><Link href="/taxes" className="block py-2 hover:text-gold transition-colors">{t("footer.services.camioneros", lang)}</Link></li>
+              {[
+                { href: "/taxes", label: t("footer.services.taxes", lang) },
+                { href: "/notaria", label: t("footer.services.notaria", lang) },
+                { href: "/inmigracion", label: t("footer.services.inmigracion", lang) },
+                { href: "/negocios", label: t("footer.services.negocios", lang) },
+                { href: "/traducciones", label: t("footer.services.traducciones", lang) },
+                { href: "/contabilidad", label: t("footer.services.contabilidad", lang) },
+                { href: "/taxes", label: t("footer.services.camioneros", lang) },
+              ]
+                .sort((a, b) => a.label.localeCompare(b.label, lang))
+                .map((s) => (
+                  <li key={s.label}>
+                    <Link href={s.href} className="block py-2 hover:text-gold transition-colors">
+                      {s.label}
+                    </Link>
+                  </li>
+                ))}
             </ul>
           </div>
 
