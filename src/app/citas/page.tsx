@@ -57,6 +57,12 @@ export default function CitasPage() {
   const [monthAvailability, setMonthAvailability] = useState<Record<string, DayStatus>>({});
   const [monthLoading, setMonthLoading] = useState(false);
   const availabilityCache = useRef<Record<string, Record<string, DayStatus>>>({});
+  // Payload crudo del mes (busy/available por día). Los clicks de día se
+  // responden de acá AL INSTANTE; el fetch ?date= queda solo como
+  // revalidación en background (el POST igual verifica conflictos en vivo).
+  const monthDataCache = useRef<
+    Record<string, { busy: Record<string, string[]>; avail: Record<string, string[]> }>
+  >({});
 
   // Selector en 2 niveles — espejo EXACTO del catálogo del CRM
   // (2026-06-11): primero la categoría (las 6 del menú de la web),
@@ -134,26 +140,49 @@ export default function CitasPage() {
       return;
     }
 
-    setLoadingSlots(true);
     setTime("");
-    fetch(`${API_BASE}/backend/citas.php?date=${date}`)
-      .then((r) => r.json())
-      .then((data) => {
-        let slots = data.availableSlots || [];
-        // Si es hoy, filtrar horas que ya pasaron
-        const today = getMinDate();
-        if (date === today) {
-          const nowHour = new Date().getHours();
-          slots = slots.filter((s: string) => parseInt(s.split(":")[0]) > nowHour);
-        }
-        setAvailableSlots(slots);
-        setBookedSlots(data.bookedTimes || []);
-      })
-      .catch(() => {
-        setAvailableSlots([]);
-        setBookedSlots([]);
-      })
-      .finally(() => setLoadingSlots(false));
+
+    let cancelled = false;
+    const apply = (slots: string[], booked: string[]) => {
+      if (cancelled) return;
+      // Si es hoy, filtrar horas que ya pasaron
+      const today = getMinDate();
+      if (date === today) {
+        const nowHour = new Date().getHours();
+        slots = slots.filter((s: string) => parseInt(s.split(":")[0]) > nowHour);
+      }
+      setAvailableSlots(slots);
+      setBookedSlots(booked);
+    };
+
+    const revalidate = () =>
+      fetch(`${API_BASE}/backend/citas.php?date=${date}`)
+        .then((r) => r.json())
+        .then((data) => apply(data.availableSlots || [], data.bookedTimes || []));
+
+    // Camino rápido: el mes visible ya trajo busy/available de este día —
+    // pintamos al instante sin spinner y revalidamos en background.
+    const mData = monthDataCache.current[date.slice(0, 7)];
+    if (mData && mData.avail[date]) {
+      apply(mData.avail[date], mData.busy[date] || []);
+      revalidate().catch(() => {});
+    } else {
+      setLoadingSlots(true);
+      revalidate()
+        .catch(() => {
+          if (!cancelled) {
+            setAvailableSlots([]);
+            setBookedSlots([]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingSlots(false);
+        });
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [date]);
 
   // Pre-cargar disponibilidad de todos los días hábiles del mes visible
@@ -199,6 +228,7 @@ export default function CitasPage() {
         if (cancelled) return;
         const busyByDate: Record<string, string[]> = data?.busyByDate || {};
         const availableByDate: Record<string, string[]> = data?.availableByDate || {};
+        monthDataCache.current[cacheKey] = { busy: busyByDate, avail: availableByDate };
         const map: Record<string, DayStatus> = {};
         daysToFetchSet.forEach((ds) => {
           let slots = availableByDate[ds] || [];

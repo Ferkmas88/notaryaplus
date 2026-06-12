@@ -338,6 +338,20 @@ function gcalBusySlotsMonthCacheInvalidate($year, $month) {
     if (is_file($cacheFile)) @unlink($cacheFile);
 }
 
+// Answer a single-date lookup from the month cache when it's fresh. The
+// frontend always loads the month grid first, so by the time the visitor
+// clicks a day we usually already know its busy slots — zero Google calls.
+// Returns null when the month cache is missing/stale/has no entry for the
+// date, in which case the caller falls back to the per-date path.
+function gcalBusySlotsFromMonthCache($date, $ttl = 300) {
+    if (!preg_match('/^(\d{4})-(\d{2})-\d{2}$/', (string) $date, $m)) return null;
+    $cacheFile = __DIR__ . '/cache/freebusy-month-' . $m[1] . '-' . $m[2] . '.json';
+    if (!is_file($cacheFile) || (time() - filemtime($cacheFile)) >= $ttl) return null;
+    $map = json_decode(@file_get_contents($cacheFile), true);
+    if (!is_array($map) || !array_key_exists($date, $map) || !is_array($map[$date])) return null;
+    return $map[$date];
+}
+
 function gcalCreateEvent($appt, $token, $serviceLabels, $calendarId = null, $colorId = null) {
     if (!$token) return;
     $calId   = $calendarId ?: NOTARY_CALENDAR_ID;
@@ -591,7 +605,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             exit();
         }
         $token   = gcalAccessToken();
-        $busyMap = gcalBusySlotsMonthCached($year, $monNo, $token);
+        $busyMap = gcalBusySlotsMonthCached($year, $monNo, $token, 300);
 
         // Per-day available slots so the frontend can compute "fully booked"
         // without knowing business hours. Sunday is closed → empty array.
@@ -601,7 +615,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $availableByDay[$dateStr] = $BUSINESS_HOURS[$dow] ?? [];
         }
 
-        header('Cache-Control: public, max-age=60, stale-while-revalidate=120');
+        header('Cache-Control: public, max-age=120, stale-while-revalidate=300');
         echo json_encode([
             'month'           => $month,
             'busyByDate'      => $busyMap,
@@ -625,10 +639,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // appointments.json is kept as a log (for emails / reminders / admin
     // dashboard) but is NEVER consulted here — otherwise stale entries
     // would block real slots even after Myrna cancels in the calendar.
-    $token      = gcalAccessToken();
-    $bookedTimes = gcalBusySlotsCached($date, $token);
+    // Fast path: the month cache usually already covers this date (the UI
+    // loads the month grid first), so most date clicks skip Google entirely.
+    $bookedTimes = gcalBusySlotsFromMonthCache($date, 300);
+    if ($bookedTimes === null) {
+        $token       = gcalAccessToken();
+        $bookedTimes = gcalBusySlotsCached($date, $token, 300);
+    }
 
-    header('Cache-Control: public, max-age=60, stale-while-revalidate=120');
+    header('Cache-Control: public, max-age=120, stale-while-revalidate=300');
     echo json_encode(['availableSlots' => $availableSlots, 'bookedTimes' => array_values($bookedTimes)]);
     exit();
 }
