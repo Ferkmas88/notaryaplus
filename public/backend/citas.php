@@ -585,6 +585,84 @@ function sendEmails($appt, $contactEmail, $contactEmail2, $contactEmail3, $servi
     }
 }
 
+// ─── Office-closed full-day blocks ────────────────────────────────────────────
+// Myrna cierra la oficina creando un evento de TODO EL DÍA cuyo título
+// contiene "closed" (ej. "Office closed") en su calendario principal. Google
+// freeBusy IGNORA los eventos de todo el día (los pone en "Libre" por
+// defecto), por eso los leemos acá explícito y cerramos el día COMPLETO.
+// Un evento "Myrna off" (o cualquier todo-el-día SIN "closed") es solo
+// informativo para sus trabajadoras y NO cierra la oficina — las demás
+// siguen tomando citas. Solo cuenta en el calendario de Myrna.
+function gcalClosedDates($token, $minDate, $maxDate) {
+    if (!$token) return [];
+    $tz    = new DateTimeZone('America/Kentucky/Louisville');
+    $dtMin = new DateTime($minDate . ' 00:00:00', $tz);
+    $dtMax = new DateTime($maxDate . ' 23:59:59', $tz);
+    $params = http_build_query([
+        'timeMin'      => $dtMin->format(DateTime::RFC3339),
+        'timeMax'      => $dtMax->format(DateTime::RFC3339),
+        'singleEvents' => 'true',
+        'orderBy'      => 'startTime',
+        'maxResults'   => 250,
+        'q'            => 'closed',
+    ]);
+    $url = 'https://www.googleapis.com/calendar/v3/calendars/'
+         . urlencode(NOTARY_CALENDAR_ID) . '/events?' . $params;
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ["Authorization: Bearer $token"],
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_SSL_VERIFYPEER => true,
+    ]);
+    $res  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($res === false || $code !== 200) {
+        error_log('[closed] events.list failed (HTTP ' . $code . ')');
+        return [];
+    }
+    $data   = json_decode($res, true);
+    $closed = [];
+    foreach ($data['items'] ?? [] as $e) {
+        // Solo eventos de TODO EL DÍA (start.date, no start.dateTime).
+        $startDate = $e['start']['date'] ?? null;
+        if (!$startDate) continue;
+        // q= es difuso (matchea descripción/ubicación); exigir "closed" en
+        // el TÍTULO. "Myrna off" no tiene "closed" → no cierra.
+        if (stripos($e['summary'] ?? '', 'closed') === false) continue;
+        // En eventos de todo el día, end.date es EXCLUSIVO → expandir rango.
+        $cur  = new DateTime($startDate, new DateTimeZone('UTC'));
+        $stop = isset($e['end']['date'])
+            ? new DateTime($e['end']['date'], new DateTimeZone('UTC'))
+            : (clone $cur)->modify('+1 day');
+        while ($cur < $stop) {
+            $closed[$cur->format('Y-m-d')] = true;
+            $cur->modify('+1 day');
+        }
+    }
+    return $closed; // mapa 'YYYY-MM-DD' => true
+}
+
+// Cache por mes (mismo patrón que freeBusy) para no pegarle a Google en cada
+// request. Devuelve mapa dateStr => true de días cerrados ese mes.
+function gcalClosedDatesMonthCached($year, $month, $token, $ttl = 300) {
+    $cacheDir  = __DIR__ . '/cache';
+    $cacheFile = $cacheDir . '/closed-' . sprintf('%04d-%02d', $year, $month) . '.json';
+    if (is_file($cacheFile)) {
+        $cached = json_decode(@file_get_contents($cacheFile), true);
+        if (is_array($cached) && isset($cached['at']) && (time() - $cached['at']) < $ttl) {
+            return $cached['dates'] ?? [];
+        }
+    }
+    $first  = sprintf('%04d-%02d-01', $year, $month);
+    $last   = date('Y-m-t', strtotime($first));
+    $dates  = gcalClosedDates($token, $first, $last);
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0775, true);
+    @file_put_contents($cacheFile, json_encode(['at' => time(), 'dates' => $dates]), LOCK_EX);
+    return $dates;
+}
+
 // ─── GET: slots disponibles ───────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Batch month endpoint — one Google call returns every busy slot for the
@@ -606,11 +684,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
         $token   = gcalAccessToken();
         $busyMap = gcalBusySlotsMonthCached($year, $monNo, $token, 300);
+        // Días con la oficina cerrada (evento todo-el-día "closed").
+        $closedMap = gcalClosedDatesMonthCached($year, $monNo, $token, 300);
 
         // Per-day available slots so the frontend can compute "fully booked"
         // without knowing business hours. Sunday is closed → empty array.
+        // Un día "Office closed" queda con 0 slots disponibles → cerrado.
         $availableByDay = [];
         foreach ($busyMap as $dateStr => $_) {
+            if (!empty($closedMap[$dateStr])) {
+                $availableByDay[$dateStr] = [];
+                continue;
+            }
             $dow = (int) date('w', strtotime($dateStr . ' 12:00:00'));
             $availableByDay[$dateStr] = $BUSINESS_HOURS[$dow] ?? [];
         }
@@ -634,6 +719,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $dayOfWeek      = (int)date('w', strtotime($date . ' 12:00:00'));
     $availableSlots = $BUSINESS_HOURS[$dayOfWeek] ?? [];
+
+    // Oficina cerrada ese día (evento todo-el-día "closed") → 0 slots.
+    $closedToken = gcalAccessToken();
+    $closedMap   = gcalClosedDatesMonthCached((int) substr($date, 0, 4), (int) substr($date, 5, 2), $closedToken, 300);
+    if (!empty($closedMap[$date])) {
+        header('Cache-Control: public, max-age=120, stale-while-revalidate=300');
+        echo json_encode(['availableSlots' => [], 'bookedTimes' => [], 'closed' => true]);
+        exit();
+    }
 
     // Google Calendar is the single source of truth for slot availability.
     // appointments.json is kept as a log (for emails / reminders / admin
@@ -761,6 +855,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // We do NOT check appointments.json here — it would create false conflicts
     // from stale local entries that are no longer in the actual calendar.
     $token    = gcalAccessToken();
+
+    // Oficina cerrada ese día (evento todo-el-día "closed") → rechazar,
+    // aunque alguien intente forzar el POST salteando la UI.
+    $closedMap = gcalClosedDatesMonthCached((int) substr($date, 0, 4), (int) substr($date, 5, 2), $token, 300);
+    if (!empty($closedMap[$date])) {
+        http_response_code(409);
+        echo json_encode(['error' => 'La oficina está cerrada ese día. Por favor elegí otra fecha.']);
+        exit();
+    }
+
     $gcalBusy = gcalBusySlots($date, $token);
     if (in_array($time, $gcalBusy, true)) {
         http_response_code(409);

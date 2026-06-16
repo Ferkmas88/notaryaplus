@@ -10,6 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Lint PHP backend
+        # Gate: a PHP syntax error must NEVER reach the live site. The runner
+        # ships with php; lint every backend .php before building/deploying.
+        run: |
+          for f in $(find public/backend -name '*.php'); do
+            php -l "$f" || exit 1
+          done
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
